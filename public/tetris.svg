@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- T Block (Purple) -->
+  <rect x="64" y="32" width="64" height="32" fill="#9C27B0"/>
+  <rect x="96" y="64" width="32" height="32" fill="#9C27B0"/>
+  
+  <!-- L Block (Orange) -->
+  <rect x="160" y="32" width="32" height="64" fill="#FF9800"/>
+  <rect x="192" y="96" width="32" height="32" fill="#FF9800"/>
+  
+  <!-- Square Block (Yellow) -->
+  <rect x="64" y="128" width="64" height="64" fill="#FFEB3B"/>
+  
+  <!-- Z Block (Red) -->
+  <rect x="160" y="160" width="64" height="32" fill="#F44336"/>
+  <rect x="192" y="128" width="32" height="32" fill="#F44336"/>
+  
+  <!-- I Block (Cyan) -->
+  <rect x="32" y="224" width="128" height="32" fill="#00BCD4"/>
+  
+  <!-- "TETRIS" Text -->
+  <text x="128" y="200" font-family="Arial, sans-serif" font-size="24" font-weight="bold" text-anchor="middle" fill="#333">TETRIS</text>
+</svg>

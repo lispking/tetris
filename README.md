@@ -2,7 +2,7 @@
 
 A modern implementation of the classic Tetris game built with React, TypeScript, and Vite. This project features a responsive design, smooth animations, and all the classic Tetris gameplay mechanics you know and love.
 
-![Tetris Gameplay](https://raw.githubusercontent.com/lispking/tetris/main/screenshot.png)
+![Tetris Gameplay](https://raw.githubusercontent.com/lispking/tetris/main/tetris-preview.png)
 
 ## 🎮 Features
 

@@ -1,0 +1,30 @@
+.gameInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 20px;
+  width: 100%;
+  max-width: 200px;
+}
+
+.infoBox {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  padding: 10px 15px;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.infoLabel {
+  color: #aaa;
+  font-size: 0.9rem;
+  margin-bottom: 5px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.infoValue {
+  color: #fff;
+  font-size: 1.5rem;
+  font-weight: bold;
+}

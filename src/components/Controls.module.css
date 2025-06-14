@@ -1,0 +1,38 @@
+.controls {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  padding: 15px;
+  margin-top: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.controls h3 {
+  margin: 0 0 15px 0;
+  color: #fff;
+  font-size: 1.2rem;
+  text-align: center;
+}
+
+.controlList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.controlItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #fff;
+}
+
+.key {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  padding: 2px 8px;
+  min-width: 40px;
+  text-align: center;
+  font-family: monospace;
+  font-size: 0.9rem;
+}

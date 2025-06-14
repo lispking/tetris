@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTetris } from '../hooks/useTetris';
 import Board from './Board';
 import GameInfo from './GameInfo';
@@ -10,11 +10,34 @@ import { placePiece } from '../utils/gameUtils';
 import styles from './Game.module.css';
 
 const Game: React.FC = () => {
+  const [clearedLines, setClearedLines] = useState<number[]>([]);
+  const [scoreFlash, setScoreFlash] = useState(false);
+  const [prevScore, setPrevScore] = useState(0);
+  
   const {
     gameState,
     gameStarted,
     startGame,
   } = useTetris();
+
+  // Handle score animation when it changes
+  useEffect(() => {
+    if (gameStarted && gameState.score > prevScore) {
+      // Only flash if the score increased (not on game start)
+      const scoreIncrease = gameState.score - prevScore;
+      
+      // More pronounced flash for bigger score increases
+      const flashDuration = Math.min(800, 300 + (scoreIncrease / 100) * 50);
+      
+      setScoreFlash(true);
+      const timer = setTimeout(() => {
+        setScoreFlash(false);
+      }, flashDuration);
+      
+      setPrevScore(gameState.score);
+      return () => clearTimeout(timer);
+    }
+  }, [gameState.score, prevScore, gameStarted]);
 
   // Create a board with the current piece in its position
   const renderBoard = React.useMemo(() => {
@@ -29,13 +52,39 @@ const Game: React.FC = () => {
     );
   }, [gameState.board, gameState.currentPiece, gameState.position, gameStarted]);
 
+  // Check for cleared lines and trigger animation
+  useEffect(() => {
+    if (gameState.linesCleared > 0) {
+      // Find which lines were cleared by checking for complete rows
+      const newClearedLines: number[] = [];
+      
+      // Check each row from bottom to top
+      for (let y = 0; y < gameState.board.length; y++) {
+        if (gameState.board[y].every(cell => cell.type)) {
+          newClearedLines.push(y);
+        }
+      }
+      
+      if (newClearedLines.length > 0) {
+        setClearedLines(newClearedLines);
+        // Clear the animation after it completes
+        const timer = setTimeout(() => setClearedLines([]), 800);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [gameState.linesCleared, gameState.board]);
+
   // Handle game start
   const handleStart = () => {
+    setClearedLines([]);
+    setScoreFlash(false);
     startGame();
   };
 
   // Handle game restart
   const handleRestart = () => {
+    setClearedLines([]);
+    setScoreFlash(false);
     startGame();
   };
 
@@ -44,17 +93,34 @@ const Game: React.FC = () => {
       {!gameStarted && <StartScreen onStart={handleStart} />}
       
       <div className={styles.gameHeader}>
-        <h1>Tetris</h1>
+        <h1 className={`${styles.titleWrapper} ${scoreFlash ? styles.scoreFlash : ''}`}>
+          <span className={styles.tetrisIcon} aria-hidden="true">
+            <span className={styles.tetrisBlock}></span>
+            <span className={styles.tetrisBlock}></span>
+            <span className={styles.tetrisBlock}></span>
+            <span className={styles.tetrisBlock}></span>
+          </span>
+          <span className={styles.titleText}>
+            <span className={styles.titleGlow}>TETRIS</span>
+            <span className={styles.titleShadow} aria-hidden="true">TETRIS</span>
+          </span>
+        </h1>
         {gameStarted && gameState.isPaused && (
           <div className={styles.pausedOverlay}>
-            <div className={styles.pausedText}>PAUSED</div>
+            <div className={styles.pausedText}>
+              <span>PAUSED</span>
+              <div className={styles.pausedHint}>Press P to continue</div>
+            </div>
           </div>
         )}
       </div>
       
       <div className={styles.gameContent}>
         <div className={styles.gameBoard}>
-          <Board board={renderBoard} />
+          <Board 
+            board={renderBoard} 
+            clearedLines={clearedLines}
+          />
           {gameState.isGameOver && (
             <GameOver score={gameState.score} onRestart={handleRestart} />
           )}
@@ -65,6 +131,7 @@ const Game: React.FC = () => {
             score={gameState.score} 
             level={gameState.level} 
             lines={gameState.lines} 
+            scoreFlash={scoreFlash}
           />
           <NextPiecePreview piece={gameState.nextPiece} />
           <Controls />

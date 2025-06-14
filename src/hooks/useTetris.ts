@@ -12,6 +12,7 @@ const INITIAL_GAME_STATE: GameState = {
   score: 0,
   level: 1,
   lines: 0,
+  linesCleared: 0,
   isGameOver: false,
   isPaused: false,
 };
@@ -123,6 +124,7 @@ export const useTetris = () => {
           score,
           level: newLevel,
           lines: newLines,
+          linesCleared, // Track the number of lines cleared in this move
           isGameOver,
         };
       }

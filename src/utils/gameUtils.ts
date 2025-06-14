@@ -19,6 +19,7 @@ export const getRandomTetromino = (): Tetromino => {
   return {
     shape: JSON.parse(JSON.stringify(shape)), // Deep copy
     color,
+    type,
   };
 };
 
@@ -95,7 +96,7 @@ export const rotatePiece = (piece: Tetromino): Tetromino => {
   }
   
   // For the 'O' piece, no rotation is needed
-  if (piece.color === '#F0F000') { // Yellow color for 'O' piece
+  if (piece.type === 'O') { // Yellow color for 'O' piece
     return { ...piece };
   }
   

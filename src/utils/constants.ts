@@ -21,54 +21,64 @@ export const POINTS = {
 // Number of lines needed to level up
 export const LINES_PER_LEVEL = 10;
 
-// Colors for different tetrominoes
-export const COLORS = {
-  I: '#00F0F0', // Cyan
-  J: '#0000F0', // Blue
-  L: '#F0A000', // Orange
-  O: '#F0F000', // Yellow
-  S: '#00F000', // Green
-  T: '#A000F0', // Purple
-  Z: '#F00000', // Red
-};
-
 // Tetromino types and their properties
 export const TETROMINO_PROPERTIES = {
-  I: { color: '#00F0F0', shape: [
-    [0, 0, 0, 0],
-    [1, 1, 1, 1],
-    [0, 0, 0, 0],
-    [0, 0, 0, 0],
-  ] },
-  J: { color: '#0000F0', shape: [
-    [1, 0, 0],
-    [1, 1, 1],
-    [0, 0, 0],
-  ] },
-  L: { color: '#F0A000', shape: [
-    [0, 0, 1],
-    [1, 1, 1],
-    [0, 0, 0],
-  ] },
-  O: { color: '#F0F000', shape: [
-    [1, 1],
-    [1, 1],
-  ] },
-  S: { color: '#00F000', shape: [
-    [0, 1, 1],
-    [1, 1, 0],
-    [0, 0, 0],
-  ] },
-  T: { color: '#A000F0', shape: [
-    [0, 1, 0],
-    [1, 1, 1],
-    [0, 0, 0],
-  ] },
-  Z: { color: '#F00000', shape: [
-    [1, 1, 0],
-    [0, 1, 1],
-    [0, 0, 0],
-  ] },
+  I: { 
+    color: '#4FD2D2', 
+    shape: [
+      [0, 0, 0, 0],
+      [1, 1, 1, 1],
+      [0, 0, 0, 0],
+      [0, 0, 0, 0],
+    ] 
+  },
+  J: { 
+    color: '#5E81F5', 
+    shape: [
+      [1, 0, 0],
+      [1, 1, 1],
+      [0, 0, 0],
+    ] 
+  },
+  L: { 
+    color: '#FF9F43', 
+    shape: [
+      [0, 0, 1],
+      [1, 1, 1],
+      [0, 0, 0],
+    ] 
+  },
+  O: { 
+    color: '#F7DC6F', 
+    shape: [
+      [1, 1],
+      [1, 1],
+    ] 
+  },
+  S: { 
+    color: '#6DD230', 
+    shape: [
+      [0, 1, 1],
+      [1, 1, 0],
+      [0, 0, 0],
+    ] 
+  },
+  T: { 
+    color: '#A55EEA', 
+    shape: [
+      [0, 1, 0],
+      [1, 1, 1],
+      [0, 0, 0],
+    ] 
+  },
+  Z: { 
+    color: '#FF6B6B', 
+    shape: [
+      [1, 1, 0],
+      [0, 1, 1],
+      [0, 0, 0],
+    ] 
+  },
 };
 
 // Tetromino shapes (legacy, will be removed)

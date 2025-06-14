@@ -11,6 +11,7 @@ export type Board = Cell[][];
 export interface Tetromino {
   shape: number[][];
   color: string;
+  type: string;
 }
 
 // Define the position of the current piece
@@ -28,6 +29,7 @@ export interface GameState {
   score: number;
   level: number;
   lines: number;
+  linesCleared: number; // Number of lines cleared in the last move
   isGameOver: boolean;
   isPaused: boolean;
 }

@@ -3,17 +3,17 @@ import styles from './GameOver.module.css';
 
 interface GameOverProps {
   score: number;
-  onRestart: () => void;
+  onNewGame: () => void;
 }
 
-const GameOver: React.FC<GameOverProps> = ({ score, onRestart }) => {
+const GameOver: React.FC<GameOverProps> = ({ score, onNewGame }) => {
   return (
     <div className={styles.gameOver}>
       <div className={styles.gameOverContent}>
         <h2>Game Over</h2>
         <p>Your score: {score}</p>
-        <button onClick={onRestart} className={styles.restartButton}>
-          Play Again
+        <button onClick={onNewGame} className={styles.restartButton}>
+          New Game
         </button>
       </div>
     </div>

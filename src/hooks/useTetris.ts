@@ -25,6 +25,20 @@ export const useTetris = () => {
   }));
   const [dropTime, setDropTime] = useState<number | null>(INITIAL_SPEED);
   const [gameStarted, setGameStarted] = useState(false);
+  
+  // Reset the game to initial state
+  const resetGame = useCallback(() => {
+    const initialPiece = getRandomTetromino();
+    const nextPiece = getRandomTetromino();
+    
+    setGameState({
+      ...INITIAL_GAME_STATE,
+      currentPiece: initialPiece,
+      nextPiece: nextPiece,
+    });
+    setDropTime(INITIAL_SPEED);
+    setGameStarted(false);
+  }, []);
 
   // Start a new game
   const startGame = useCallback(() => {
@@ -315,6 +329,9 @@ export const useTetris = () => {
     };
   }, [gameStarted, gameState.isPaused, gameState.isGameOver, gameState.level, move]);
 
+  // Destructure commonly used properties for easier access
+  const { level, linesCleared, score, isGameOver } = gameState;
+
   return {
     gameState,
     dropTime,
@@ -323,5 +340,11 @@ export const useTetris = () => {
     togglePause,
     move,
     rotate,
+    resetGame,
+    // Expose these for analytics
+    level,
+    linesCleared,
+    score,
+    isGameOver,
   };
 };

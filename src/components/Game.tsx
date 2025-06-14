@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useTetris } from '../hooks/useTetris';
+import { useAnalytics } from '../contexts/AnalyticsContext';
 import Board from './Board';
 import GameInfo from './GameInfo';
 import NextPiecePreview from './NextPiecePreview';
@@ -13,12 +14,78 @@ const Game: React.FC = () => {
   const [clearedLines, setClearedLines] = useState<number[]>([]);
   const [scoreFlash, setScoreFlash] = useState(false);
   const [prevScore, setPrevScore] = useState(0);
+  const { trackEvent, events } = useAnalytics();
   
   const {
     gameState,
     gameStarted,
     startGame,
+    resetGame,
+    isGameOver,
+    level,
+    linesCleared,
+    score,
   } = useTetris();
+  
+  // Track game over
+  useEffect(() => {
+    if (isGameOver && gameStarted) {
+      trackEvent(events.GAME_OVER, {
+        score,
+        level,
+        lines_cleared: linesCleared,
+      });
+    }
+  }, [isGameOver, gameStarted, score, level, linesCleared, trackEvent, events]);
+  
+  // Track score changes
+  useEffect(() => {
+    if (gameStarted && score > prevScore) {
+      const scoreIncrease = score - prevScore;
+      trackEvent(events.SCORE_UPDATE, {
+        score,
+        score_increase: scoreIncrease,
+        level,
+      });
+      setPrevScore(score);
+    }
+  }, [score, prevScore, gameStarted, level, trackEvent, events]);
+  
+  // Track level up
+  const [prevLevel, setPrevLevel] = useState(level);
+  useEffect(() => {
+    if (level > prevLevel) {
+      trackEvent(events.LEVEL_UP, {
+        new_level: level,
+        lines_cleared: linesCleared,
+      });
+      setPrevLevel(level);
+    }
+  }, [level, prevLevel, linesCleared, trackEvent, events]);
+  
+  // Track row clears
+  useEffect(() => {
+    if (clearedLines.length > 0) {
+      trackEvent(events.ROW_CLEAR, {
+        row_count: clearedLines.length,
+        rows: clearedLines,
+        level,
+        score,
+      });
+    }
+  }, [clearedLines, level, score, trackEvent, events]);
+  
+  // Track game start with a callback to avoid re-renders
+  const handleStartGame = useCallback(() => {
+    startGame();
+    trackEvent(events.GAME_START, { level });
+  }, [startGame, trackEvent, events, level]);
+  
+  // Track new game after game over
+  const handleNewGame = useCallback(() => {
+    resetGame();
+    trackEvent(events.NEW_GAME);
+  }, [resetGame, trackEvent, events]);
 
   // Handle score animation when it changes
   useEffect(() => {
@@ -74,18 +141,18 @@ const Game: React.FC = () => {
     }
   }, [gameState.linesCleared, gameState.board]);
 
-  // Handle game start
+  // Handle game start - using the analytics-enhanced handler
   const handleStart = () => {
     setClearedLines([]);
     setScoreFlash(false);
-    startGame();
+    handleStartGame();
   };
 
-  // Handle game restart
-  const handleRestart = () => {
+  // Handle new game after game over - using the analytics-enhanced handler
+  const handleNewGameClick = () => {
     setClearedLines([]);
     setScoreFlash(false);
-    startGame();
+    handleNewGame();
   };
 
   return (
@@ -122,7 +189,7 @@ const Game: React.FC = () => {
             clearedLines={clearedLines}
           />
           {gameState.isGameOver && (
-            <GameOver score={gameState.score} onRestart={handleRestart} />
+            <GameOver score={gameState.score} onNewGame={handleNewGameClick} />
           )}
         </div>
         

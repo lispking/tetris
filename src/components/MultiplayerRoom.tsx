@@ -34,13 +34,13 @@ const MultiplayerRoom: React.FC<MultiplayerRoomProps> = ({
     const [startTimeout, setStartTimeout] = useState<NodeJS.Timeout | null>(null);
     const [countdownInterval, setCountdownInterval] = useState<NodeJS.Timeout | null>(null);
     const leaveSession = useLeaveSession();
-    
+
     // Handle game start countdown and timeout
     useEffect(() => {
         if (gameStatus === 'starting') {
             // Start countdown from 3
             setCountdown(3);
-            
+
             // Update countdown every second
             const interval = setInterval(() => {
                 setCountdown(prev => {
@@ -51,9 +51,9 @@ const MultiplayerRoom: React.FC<MultiplayerRoomProps> = ({
                     return prev - 1;
                 });
             }, 1000);
-            
+
             setCountdownInterval(interval);
-            
+
             // Set timeout to start the game after countdown
             const timer = setTimeout(() => {
                 console.log(playerName, 'Starting game after countdown');
@@ -61,16 +61,16 @@ const MultiplayerRoom: React.FC<MultiplayerRoomProps> = ({
                 setLocalGameStarting(false);
                 setCountdown(null);
             }, 3000); // 3 second countdown
-            
+
             setStartTimeout(timer);
-            
+
             return () => {
                 if (interval) clearInterval(interval);
                 if (timer) clearTimeout(timer);
             };
         }
     }, [gameStatus, playerName]);
-    
+
     // Cleanup timeouts and intervals on unmount
     useEffect(() => {
         return () => {
@@ -101,30 +101,30 @@ const MultiplayerRoom: React.FC<MultiplayerRoomProps> = ({
 
         console.log('Player joining room:', playerName);
         let isMounted = true;
-        
+
         // Add current player to the players list
         const addPlayer = () => {
             if (!isMounted) return;
-            
+
             setPlayers(prevPlayers => {
                 if (!isMounted) return prevPlayers || [];
-                
+
                 const currentPlayers = Array.isArray(prevPlayers) ? [...prevPlayers] : [];
                 const playerExists = currentPlayers.some(p => p.id === playerName);
-                
+
                 if (!playerExists) {
                     console.log('Adding new player:', playerName);
-                    return [...currentPlayers, { 
-                        id: playerName, 
-                        name: playerName, 
-                        isReady: false 
+                    return [...currentPlayers, {
+                        id: playerName,
+                        name: playerName,
+                        isReady: false
                     }];
                 }
-                
+
                 return currentPlayers;
             });
         };
-        
+
         // Small delay to ensure session is ready
         const timer = setTimeout(addPlayer, 100);
 
@@ -132,7 +132,7 @@ const MultiplayerRoom: React.FC<MultiplayerRoomProps> = ({
         return () => {
             isMounted = false;
             clearTimeout(timer);
-            
+
             if (playerName) {
                 console.log('Player leaving room:', playerName);
                 setPlayers(prevPlayers => {
@@ -146,18 +146,18 @@ const MultiplayerRoom: React.FC<MultiplayerRoomProps> = ({
     // Sync ready state with the shared players list
     useEffect(() => {
         if (!playerName || !Array.isArray(players)) return;
-        
+
         setPlayers(prevPlayers => {
             if (!Array.isArray(prevPlayers)) return [];
-            
+
             // Check if update is needed
             const playerIndex = prevPlayers.findIndex(p => p.id === playerName);
             if (playerIndex === -1 || prevPlayers[playerIndex]?.isReady === isReady) {
                 return prevPlayers;
             }
-            
+
             // Only update the specific player's ready state
-            return prevPlayers.map(p => 
+            return prevPlayers.map(p =>
                 p.id === playerName ? { ...p, isReady } : p
             );
         });
@@ -168,15 +168,15 @@ const MultiplayerRoom: React.FC<MultiplayerRoomProps> = ({
         setIsReady(prevReady => {
             const newReadyState = !prevReady;
             console.log('Toggling ready state for', playerName, 'to', newReadyState);
-            
+
             // Update the players list with the new ready state
             setPlayers(prevPlayers => {
                 if (!Array.isArray(prevPlayers)) return [];
-                return prevPlayers.map(p => 
+                return prevPlayers.map(p =>
                     p.id === playerName ? { ...p, isReady: newReadyState } : p
                 );
             });
-            
+
             return newReadyState;
         });
     }, [playerName]); // Removed isReady from deps since we use the updater form
@@ -187,30 +187,30 @@ const MultiplayerRoom: React.FC<MultiplayerRoomProps> = ({
             setError('No players in the room');
             return;
         }
-        
+
         const allReady = players.length >= 2 && players.every(p => p.isReady);
         if (allReady) {
             console.log('All players are ready, preparing to start the game...');
-            
+
             // Set local loading state for immediate UI feedback
             setLocalGameStarting(true);
-            
+
             // Update shared game status to 'starting' and then to 'started' after delay
             await setGameStatus('starting');
             console.log(playerName, 'Game status set to: starting');
-            
+
             // Wait for all players to receive the 'starting' state
             await new Promise(resolve => setTimeout(resolve, 1500));
-            
+
             // Then update to 'started' to begin the game
             await setGameStatus('started');
             console.log(playerName, 'Game status set to: started');
-            
+
             // Clear local loading state in case it's still active
             setLocalGameStarting(false);
         } else {
-            const errorMsg = players.length < 2 ? 
-                'At least 2 players are needed to start' : 
+            const errorMsg = players.length < 2 ?
+                'At least 2 players are needed to start' :
                 'All players must be ready to start';
             console.log(playerName, 'Cannot start game:', errorMsg);
             setError(errorMsg);
@@ -220,10 +220,10 @@ const MultiplayerRoom: React.FC<MultiplayerRoomProps> = ({
     const handleLeaveRoom = useCallback(() => {
         // First update local state to prevent UI flicker
         setError('');
-        
+
         // Then clean up the session
         leaveSession();
-        
+
         // Finally, call the parent's onLeave handler
         onLeave();
     }, [leaveSession, onLeave]);
@@ -231,7 +231,7 @@ const MultiplayerRoom: React.FC<MultiplayerRoomProps> = ({
     // Show game starting message
     if (localGameStarting || gameStatus === 'starting') {
         console.log(playerName, 'Game is starting... current status:', { localGameStarting, gameStatus });
-        
+
         return (
             <div className={styles.roomContainer}>
                 <div className={styles.gameStarting}>
@@ -246,11 +246,11 @@ const MultiplayerRoom: React.FC<MultiplayerRoomProps> = ({
             </div>
         );
     }
-    
+
     // If game has started, render the MultiplayerGame component
     if (gameStatus === 'started') {
         return (
-            <MultiplayerGame 
+            <MultiplayerGame
                 roomId={roomId}
                 isHost={isHost}
                 playerName={playerName}
@@ -264,8 +264,8 @@ const MultiplayerRoom: React.FC<MultiplayerRoomProps> = ({
             <div className={styles.roomHeader}>
                 <div className={styles.roomTitle}>
                     <h2>Room: {roomId}</h2>
-                    <button 
-                        onClick={copyRoomUrl} 
+                    <button
+                        onClick={copyRoomUrl}
                         className={styles.copyButton}
                         title="Copy room URL to clipboard"
                     >

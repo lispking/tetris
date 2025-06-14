@@ -2,11 +2,69 @@
   width: 100%;
   max-width: 600px;
   margin: 0 auto 20px;
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 12px;
-  padding: 15px;
+  background: rgba(0, 0, 0, 0.7);
+  border-radius: 8px;
+  padding: 10px;
+  margin: 10px 0;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
   border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Compact mode */
+.gameInfo.compact {
+  padding: 8px 12px;
+  margin: 2px 0;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.gameInfo.compact .infoRow {
+  gap: 8px;
+}
+
+.gameInfo.compact .infoItem {
+  padding: 2px 8px;
+}
+
+.gameInfo.compact .infoValue {
+  font-size: 0.9em;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.gameInfo.compact .infoValue.compactValue {
+  font-weight: 600;
+  font-size: 1em;
+}
+
+.gameInfo.compact .icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #4FD2D2;
+  opacity: 0.8;
+  transition: all 0.2s ease;
+}
+
+.gameInfo.compact .infoItem:hover .icon {
+  color: #5E81F5;
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+/* Player stat card specific styles */
+.playerStatCard .gameInfo.compact {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.playerStatCard .infoValue {
+  font-family: 'Roboto Mono', monospace;
+  font-weight: 500;
 }
 
 .infoRow {

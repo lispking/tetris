@@ -31,6 +31,7 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
   playerName,
   onLeave
 }) => {
+  const [copySuccess, setCopySuccess] = React.useState(false);
   const [clearedLines, setClearedLines] = useState<number[]>([]);
   const [scoreFlash, setScoreFlash] = useState(false);
   const [prevScore, setPrevScore] = useState(0);
@@ -166,44 +167,70 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
   }, [resetGame, startGame, trackEvent, events, roomId]);
 
   return (
-    <div className={styles.gameContainer}>
-      <div className={styles.multiplayerInfo}>
-        <div className={styles.multiplayerHeader}>
-          <span className={styles.playerName}>Player: {playerName} </span>
-          <span className={styles.roomId}>Room: {roomId}</span>
-          <button 
-            onClick={() => {
-              navigator.clipboard.writeText(roomId);
-              // Show copied notification
-            }}
-            className={styles.copyButton}
-            title="Copy Room ID"
-          >
-            📋
-          </button>
-          <button 
-            onClick={onLeave}
-            className={styles.leaveButton}
-            title="Leave Game"
-          >
-            Leave
-          </button>
-        </div>
-      </div>
-      
+    <div className={`${styles.gameContainer} ${styles.multiplayer}`}>
+      {/* Player Stats Header */}
       <div className={styles.gameHeader}>
-        <h1 className={`${styles.titleWrapper} ${scoreFlash ? styles.scoreFlash : ''}`}>
-          <span className={styles.tetrisIcon} aria-hidden="true">
-            <span className={styles.tetrisBlock}></span>
-            <span className={styles.tetrisBlock}></span>
-            <span className={styles.tetrisBlock}></span>
-            <span className={styles.tetrisBlock}></span>
-          </span>
-          <span className={styles.titleText}>
-            <span className={styles.titleGlow}>TETRIS MULTIPLAYER</span>
-            <span className={styles.titleShadow} aria-hidden="true">TETRIS MULTIPLAYER</span>
-          </span>
-        </h1>
+        <div className={styles.gameTitle}>
+          <h1 className={`${styles.titleWrapper} ${scoreFlash ? styles.scoreFlash : ''}`}>
+            <span className={styles.tetrisIcon} aria-hidden="true">
+              <span className={styles.tetrisBlock}></span>
+              <span className={styles.tetrisBlock}></span>
+              <span className={styles.tetrisBlock}></span>
+              <span className={styles.tetrisBlock}></span>
+            </span>
+            <span className={styles.titleText}>
+              <span className={styles.titleGlow}>TETRIS BATTLE</span>
+              <span className={styles.titleShadow} aria-hidden="true">TETRIS BATTLE</span>
+            </span>
+          </h1>
+        </div>
+        
+        <div className={styles.playerStatsHeader}>
+          <div className={styles.playerStatCard}>
+            <div className={styles.playerNameTag}>YOU</div>
+            <GameInfo 
+              score={score} 
+              level={level} 
+              lines={gameState.lines} 
+              scoreFlash={scoreFlash}
+              compact={true}
+            />
+          </div>
+          
+          {opponent && (
+            <div className={`${styles.playerStatCard} ${styles.opponentCard}`}>
+              <div className={styles.playerNameTag}>{opponent.name}</div>
+              <GameInfo 
+                score={opponent.score} 
+                level={opponent.level} 
+                lines={opponent.lines} 
+                scoreFlash={false}
+                compact={true}
+              />
+            </div>
+          )}
+          
+          <div className={styles.gameControls}>
+            <button 
+              onClick={() => {
+                navigator.clipboard.writeText(roomId);
+                setCopySuccess(true);
+                setTimeout(() => setCopySuccess(false), 2000);
+              }}
+              className={styles.headerButton}
+              title="Copy Room ID"
+            >
+              {copySuccess ? '✓ Copied!' : '📋'}
+            </button>
+            <button 
+              onClick={onLeave}
+              className={`${styles.headerButton} ${styles.leaveButton}`}
+              title="Leave Game"
+            >
+              🚪 Leave
+            </button>
+          </div>
+        </div>
       </div>
 
       <div className={styles.gameContent}>
@@ -226,30 +253,6 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
         </div>
         
         <div className={styles.gameSidebar}>
-          <div className={styles.playerStatsContainer}>
-            <div className={`${styles.playerStats} ${styles.currentPlayer}`}>
-              <h3>You</h3>
-              <GameInfo 
-                score={score} 
-                level={level} 
-                lines={gameState.lines} 
-                scoreFlash={scoreFlash}
-              />
-            </div>
-            
-            {opponent && (
-              <div className={`${styles.playerStats} ${styles.opponentPlayer}`}>
-                <h3>{opponent.name}</h3>
-                <GameInfo 
-                  score={opponent.score} 
-                  level={opponent.level} 
-                  lines={opponent.lines} 
-                  scoreFlash={false}
-                />
-              </div>
-            )}
-          </div>
-          
           <NextPiecePreview piece={gameState.nextPiece} />
           <Controls 
             onPause={togglePause}

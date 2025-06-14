@@ -1,57 +1,21 @@
 import React, { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, useSearchParams, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useSearchParams } from 'react-router-dom';
 import Game from './components/Game';
 import StartScreen from './components/StartScreen';
 import './App.css';
 
 const AppRoutes: React.FC = () => {
   const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
   const roomId = searchParams.get('room') || '';
   const [gameStarted, setGameStarted] = useState(false);
-  
-  // State for multiplayer game
-  const [multiplayerState, setMultiplayerState] = useState({
-    isMultiplayer: false,
-    roomId: '',
-    isHost: false,
-    playerName: ''
-  });
   
   const handleStartGame = () => {
     setGameStarted(true);
   };
 
-  const handleLeaveRoom = () => {
-    // Keep the roomId for navigating back to the multiplayer page
-    const currentRoomId = multiplayerState.roomId;
-    
-    setMultiplayerState({
-      isMultiplayer: false,
-      roomId: currentRoomId, // Keep the roomId in state for potential reuse
-      isHost: false,
-      playerName: ''
-    });
-    setGameStarted(false);
-    
-    // Navigate to the multiplayer page with the current room ID
-    if (currentRoomId) {
-      navigate(`/multiplayer?room=${encodeURIComponent(currentRoomId)}`);
-    } else {
-      navigate('/multiplayer');
-    }
-  };
-
   if (gameStarted) {
-    console.log('Game started for', multiplayerState.playerName);
     return (
-      <Game 
-        isMultiplayer={multiplayerState.isMultiplayer}
-        roomId={multiplayerState.roomId}
-        isHost={multiplayerState.isHost}
-        playerName={multiplayerState.playerName}
-        onLeaveRoom={handleLeaveRoom}
-      />
+      <Game />
     );
   }
 

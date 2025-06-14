@@ -10,53 +10,16 @@ import StartScreen from './StartScreen';
 import { placePiece } from '../utils/gameUtils';
 import styles from './Game.module.css';
 
-interface GameProps {
-  isMultiplayer?: boolean;
-  roomId?: string;
-  isHost?: boolean;
-  playerName?: string;
-  onLeaveRoom?: () => void;
-}
 
-const Game: React.FC<GameProps> = ({
-  isMultiplayer = false,
-  roomId = '',
-  isHost = false,
-  playerName: initialPlayerName = 'Player',
-  onLeaveRoom
-}) => {
+const Game: React.FC = () => {
   // Game state
   const [clearedLines, setClearedLines] = useState<number[]>([]);
   const [scoreFlash, setScoreFlash] = useState(false);
   const [prevScore, setPrevScore] = useState(0);
 
-  // Multiplayer state
-  const [playerName, setPlayerName] = useState(initialPlayerName);
-  const [, setIsHostState] = useState(isHost);
-  const [, setRoomIdState] = useState(roomId);
-  const [isMultiplayerState, setIsMultiplayerState] = useState(isMultiplayer);
-
   // Track previous level for level up detection
   const [prevLevel, setPrevLevel] = useState(0);
 
-  // Handle multiplayer state changes
-  useEffect(() => {
-    setIsMultiplayerState(isMultiplayer);
-    setRoomIdState(roomId);
-    setIsHostState(isHost);
-    setPlayerName(initialPlayerName);
-  }, [isMultiplayer, roomId, isHost, initialPlayerName]);
-
-  // Clean up multiplayer state when unmounting
-  useEffect(() => {
-    return () => {
-      console.log('Game component unmounting, cleaning up...');
-      if (isMultiplayerState && onLeaveRoom) {
-        console.log(playerName, 'Leaving multiplayer room...');
-        onLeaveRoom();
-      }
-    };
-  }, [isMultiplayerState, onLeaveRoom]);
   const { trackEvent, events } = useAnalytics();
 
   const {
@@ -72,16 +35,6 @@ const Game: React.FC<GameProps> = ({
     move,
     rotate,
   } = useTetris();
-
-  // Track multiplayer mode changes
-  useEffect(() => {
-    if (gameStarted) {
-      trackEvent(events.GAME_MODE_CHANGED, {
-        mode: isMultiplayer ? 'multiplayer' : 'singleplayer',
-        roomId: isMultiplayer ? roomId || 'host' : null
-      });
-    }
-  }, [isMultiplayer, roomId, gameStarted, trackEvent, events]);
 
   // Track game over
   useEffect(() => {
@@ -132,9 +85,6 @@ const Game: React.FC<GameProps> = ({
 
   // Handle game start - single player
   const handleStartGame = useCallback(() => {
-    setIsMultiplayerState(false);
-    setRoomIdState('');
-    setPlayerName('Player');
     startTetrisGame();
     trackEvent(events.GAME_START, {
       level: gameState.level,
@@ -215,25 +165,6 @@ const Game: React.FC<GameProps> = ({
         />
       ) : (
         <>
-          {isMultiplayer && (
-            <div className={styles.multiplayerInfo}>
-              {roomId ? (
-                <div className={styles.multiplayerHeader}>
-                  <span className={styles.playerName}>Player: {playerName} </span>
-                  <span className={styles.roomId}>Room: {roomId}</span>
-                  <button
-                    onClick={() => navigator.clipboard.writeText(roomId)}
-                    className={styles.copyButton}
-                    title="Copy Room ID"
-                  >
-                    📋
-                  </button>
-                </div>
-              ) : (
-                <div>Connecting to multiplayer...</div>
-              )}
-            </div>
-          )}
           <div className={styles.gameHeader}>
             <h1 className={`${styles.titleWrapper} ${scoreFlash ? styles.scoreFlash : ''}`}>
               <span className={styles.tetrisIcon} aria-hidden="true">

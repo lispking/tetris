@@ -14,7 +14,6 @@ const Game: React.FC = () => {
     gameState,
     gameStarted,
     startGame,
-    togglePause,
   } = useTetris();
 
   // Create a board with the current piece in its position

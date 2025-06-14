@@ -1,4 +1,4 @@
-import type { Board, Cell, Position, Tetromino } from '../types/tetris';
+import type { Board, Position, Tetromino } from '../types/tetris';
 import { BOARD_HEIGHT, BOARD_WIDTH, TETROMINO_PROPERTIES } from './constants';
 
 // Create an empty board

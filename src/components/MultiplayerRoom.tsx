@@ -51,75 +51,87 @@ const MultiplayerRoom: React.FC<MultiplayerRoomProps> = ({
     useEffect(() => {
         if (!playerName) return;
 
+        console.log('Player joining room:', playerName);
         let isMounted = true;
         
-        const addPlayer = async () => {
-            try {
-                // Only add player if they don't exist in the players list
-                await setPlayers(prevPlayers => {
-                    if (!isMounted) return prevPlayers || [];
-                    
-                    const currentPlayers = Array.isArray(prevPlayers) ? prevPlayers : [];
-                    const playerExists = currentPlayers.some(p => p.id === playerName);
-                    
-                    if (playerExists) {
-                        return currentPlayers;
-                    }
-                    
+        // Add current player to the players list
+        const addPlayer = () => {
+            if (!isMounted) return;
+            
+            setPlayers(prevPlayers => {
+                if (!isMounted) return prevPlayers || [];
+                
+                const currentPlayers = Array.isArray(prevPlayers) ? [...prevPlayers] : [];
+                const playerExists = currentPlayers.some(p => p.id === playerName);
+                
+                if (!playerExists) {
+                    console.log('Adding new player:', playerName);
                     return [...currentPlayers, { 
                         id: playerName, 
                         name: playerName, 
                         isReady: false 
                     }];
-                });
-            } catch (error) {
-                console.error('Error adding player:', error);
-            }
+                }
+                
+                return currentPlayers;
+            });
         };
         
-        addPlayer();
-        
-        return () => {
-            isMounted = false;
-        };
+        // Small delay to ensure session is ready
+        const timer = setTimeout(addPlayer, 100);
 
         // Cleanup on unmount
         return () => {
-            setPlayers(prevPlayers => {
-                if (!Array.isArray(prevPlayers)) return [];
-                return prevPlayers.filter(p => p.id !== playerName);
-            });
+            isMounted = false;
+            clearTimeout(timer);
+            
+            if (playerName) {
+                console.log('Player leaving room:', playerName);
+                setPlayers(prevPlayers => {
+                    if (!Array.isArray(prevPlayers)) return [];
+                    return prevPlayers.filter(p => p.id !== playerName);
+                });
+            }
         };
     }, [playerName, setPlayers]);
 
-    const toggleReady = () => {
-        const newReadyState = !isReady;
-        // Update both the individual ready state and the players list
-        setIsReady(newReadyState);
-
-        // Update the player's ready status in the players list
-        setPlayers(prevPlayers => {
-            if (!prevPlayers) return [];
-            return prevPlayers.map(p =>
-                p.id === playerName ? { ...p, isReady: newReadyState } : p
-            );
-        });
-    };
-
-    // Sync the player's ready state with the players list
+    // Sync ready state with the shared players list
     useEffect(() => {
         if (!playerName || !Array.isArray(players)) return;
+        
+        setPlayers(prevPlayers => {
+            if (!Array.isArray(prevPlayers)) return [];
+            
+            // Check if update is needed
+            const playerIndex = prevPlayers.findIndex(p => p.id === playerName);
+            if (playerIndex === -1 || prevPlayers[playerIndex]?.isReady === isReady) {
+                return prevPlayers;
+            }
+            
+            // Only update the specific player's ready state
+            return prevPlayers.map(p => 
+                p.id === playerName ? { ...p, isReady } : p
+            );
+        });
+    }, [isReady, playerName, setPlayers]); // Removed players from deps to prevent loop
 
-        const currentPlayer = players.find(p => p.id === playerName);
-        if (currentPlayer && currentPlayer.isReady !== isReady) {
+    const toggleReady = useCallback(() => {
+        // Update local state first
+        setIsReady(prevReady => {
+            const newReadyState = !prevReady;
+            console.log('Toggling ready state for', playerName, 'to', newReadyState);
+            
+            // Update the players list with the new ready state
             setPlayers(prevPlayers => {
                 if (!Array.isArray(prevPlayers)) return [];
                 return prevPlayers.map(p => 
-                    p.id === playerName ? { ...p, isReady } : p
+                    p.id === playerName ? { ...p, isReady: newReadyState } : p
                 );
             });
-        }
-    }, [isReady, playerName, players, setPlayers]);
+            
+            return newReadyState;
+        });
+    }, [playerName]); // Removed isReady from deps since we use the updater form
 
     const handleStartGame = useCallback(() => {
         if (!Array.isArray(players) || players.length === 0) {

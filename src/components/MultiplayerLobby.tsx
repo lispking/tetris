@@ -17,26 +17,47 @@ const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({ onStartGame, onBack
     const [isHost, setIsHost] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
-    const [userid, setUserId] = useState(username);
 
-    // Initialize roomId from URL parameter if provided
-    const [sessionId, setSessionId] = useState(Date.now().toString());
+    // Session ID state - initialized when entering a room
+    const [sessionId, setSessionId] = useState('');
     
+    // Initialize roomId from URL parameter if provided
     useEffect(() => {
         if (initialRoomId) {
-            setRoomId(initialRoomId);
+            const trimmedId = initialRoomId.trim();
+            if (trimmedId && trimmedId !== roomId) {
+                setRoomId(trimmedId);
+            }
         }
     }, [initialRoomId]);
     
-    // Generate a new session ID and enter the room
-    const handleEnterRoom = useCallback((newIsHost: boolean) => {
+    // Enter the room with the room ID as part of the session
+    const handleEnterRoom = useCallback((newIsHost: boolean, targetUsername: string, targetRoomId?: string) => {
+        // Use the provided room ID or the current roomId from state
+        const effectiveRoomId = (targetRoomId || roomId)?.toString().trim();
+        if (!effectiveRoomId) {
+            console.error('No room ID provided for entering room');
+            setError('Room ID is missing');
+            return;
+        }
+        
+        // Update the room ID in state if it's different
+        if (effectiveRoomId !== roomId) {
+            setRoomId(effectiveRoomId);
+        }
+        
+        // Use the room ID as part of the session ID to ensure all players in the same room share the same session
+        const roomSessionId = `room-${effectiveRoomId}`;
+        
         // Update all states in a single batch to prevent multiple re-renders
-        setSessionId(Date.now().toString());
+        setSessionId(roomSessionId);
         setIsInRoom(true);
         setIsHost(newIsHost);
         setError('');
         setIsLoading(false);
-    }, []);
+        
+        console.log(`[${targetUsername}] Entering room ${effectiveRoomId} with session ID: ${roomSessionId} as ${newIsHost ? 'host' : 'guest'}`);
+    }, [roomId]);
 
     // Load saved player name on component mount
     useEffect(() => {
@@ -62,7 +83,6 @@ const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({ onStartGame, onBack
         if (value.trim()) {
             try {
                 await setPlayerName(value.trim());
-                setUserId(value.trim() + '-' + Math.random().toString(36).substring(2, 8));
             } catch (error) {
                 console.error('Error saving player name:', error);
             }
@@ -94,7 +114,7 @@ const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({ onStartGame, onBack
             await new Promise(resolve => setTimeout(resolve, 500));
             
             // Enter the room as a guest
-            handleEnterRoom(false);
+            handleEnterRoom(false, username, roomId.trim());
             return true;
         } catch (err) {
             console.error('Failed to join room:', err);
@@ -118,13 +138,30 @@ const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({ onStartGame, onBack
         try {
             // Generate a random room ID
             const newRoomId = Math.random().toString(36).substring(2, 8).toUpperCase();
-            setRoomId(newRoomId);
+            
+            // First set the room ID and wait for it to update
+            await new Promise<void>((resolve) => {
+                setRoomId(newRoomId);
+                resolve();
+            });
+            
+            // Ensure roomId is set before proceeding
+            if (!newRoomId) {
+                throw new Error('Failed to generate room ID');
+            }
             
             // Simulate network delay
             await new Promise(resolve => setTimeout(resolve, 500));
             
-            // Enter the room as host
-            handleEnterRoom(true);
+            // Enter the room as host - pass the room ID directly to ensure it's not stale
+            const roomSessionId = `room-${newRoomId}`;
+            setSessionId(roomSessionId);
+            setIsInRoom(true);
+            setIsHost(true);
+            setError('');
+            setIsLoading(false);
+            
+            console.log(`[${username}] Created room ${newRoomId} with session ID: ${roomSessionId}`);
         } catch (err) {
             console.error('Failed to create room:', err);
             const errorMessage = err instanceof Error ? err.message : 'Failed to create room. Please try again.';
@@ -158,7 +195,6 @@ const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({ onStartGame, onBack
         return (
             <ReactTogether
                 key={sessionId} // Force remount with new session when sessionId changes
-                userId={userid}
                 sessionParams={{
                     appId: import.meta.env['VITE_APP_ID'],
                     apiKey: import.meta.env['VITE_API_KEY'],

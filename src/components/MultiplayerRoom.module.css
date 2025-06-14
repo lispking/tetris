@@ -1,0 +1,200 @@
+.roomContainer {
+  max-width: 500px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: rgba(0, 0, 0, 0.7);
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  color: white;
+  text-align: center;
+}
+
+.roomHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.roomHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  gap: 1rem;
+}
+
+.roomTitle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.roomTitle h2 {
+  margin: 0;
+  color: #4CAF50;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 1.2rem;
+}
+
+.copyButton {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  padding: 0.2rem 0.5rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.copyButton:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.copyButton:active {
+  transform: translateY(0);
+}
+
+.leaveButton {
+  background: linear-gradient(145deg, #ff4d4d, #ff1a1a);
+  color: white;
+  border: none;
+  padding: 0.4rem 1.2rem;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.8rem;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  box-shadow: 0 3px 10px rgba(255, 0, 0, 0.2);
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+  height: 34px;
+}
+
+.leaveButton:hover {
+  background: linear-gradient(145deg, #ff3333, #e60000);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 0, 0, 0.3);
+}
+
+.leaveButton:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 10px rgba(255, 0, 0, 0.2);
+}
+
+.playersList {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 2rem;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.playerItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  margin: 0.5rem 0;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+
+.playerItem:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.ready {
+  color: #4CAF50;
+  font-weight: bold;
+}
+
+.notReady {
+  color: #ff9800;
+}
+
+.roomActions {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.readyButton,
+.startButton {
+  padding: 0.8rem 2rem;
+  font-size: 1.1rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.2s;
+}
+
+.readyButton {
+  background: #4CAF50;
+  color: white;
+}
+
+.readyButton:hover {
+  background: #45a049;
+  transform: translateY(-2px);
+}
+
+.startButton {
+  background: #2196F3;
+  color: white;
+  margin-top: 0.5rem;
+}
+
+.startButton:disabled {
+  background: #555;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.startButton:not(:disabled):hover {
+  background: #1976D2;
+  transform: translateY(-2px);
+}
+
+.error {
+  color: #ff4444;
+  margin-top: 1rem;
+  padding: 0.5rem;
+  background: rgba(255, 0, 0, 0.1);
+  border-radius: 4px;
+}
+
+/* Scrollbar styling */
+.playersList::-webkit-scrollbar {
+  width: 8px;
+}
+
+.playersList::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+
+.playersList::-webkit-scrollbar-thumb {
+  background: #4CAF50;
+  border-radius: 4px;
+}
+
+.playersList::-webkit-scrollbar-thumb:hover {
+  background: #45a049;
+}

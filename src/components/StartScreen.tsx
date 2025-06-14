@@ -1,31 +1,61 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import styles from './StartScreen.module.css';
 import MultiplayerLobby from './MultiplayerLobby';
 
 interface StartScreenProps {
   onStart: () => void;
-  onMultiplayerStart: (roomId: string, username: string) => void;
+  onMultiplayerStart: (roomId: string, isHost: boolean, playerName: string) => void;
+  initialRoomId?: string;
 }
 
-const StartScreen: React.FC<StartScreenProps> = ({ onStart, onMultiplayerStart }) => {
-  const [showMultiplayer, setShowMultiplayer] = useState(false);
+const StartScreen: React.FC<StartScreenProps> = ({ onStart, onMultiplayerStart, initialRoomId = '' }) => {
+  const [showMultiplayer, setShowMultiplayer] = useState(!!initialRoomId);
+  const [username, setUsername] = useState('Player');
+  
+  // Auto-connect to the room if initialRoomId is provided
+  useEffect(() => {
+    if (initialRoomId && !showMultiplayer) {
+      // Use a small timeout to ensure the component is fully mounted
+      const timer = setTimeout(() => {
+        setShowMultiplayer(true);
+      }, 100);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [initialRoomId, showMultiplayer]);
+  
+  // Load saved username if available
+  useEffect(() => {
+    const loadUsername = async () => {
+      try {
+        const savedName = localStorage.getItem('tetris-player-name');
+        if (savedName) {
+          setUsername(savedName);
+        }
+      } catch (error) {
+        console.error('Error loading username:', error);
+      }
+    };
+    
+    loadUsername();
+  }, []);
 
-  const handleCreateRoom = useCallback((username: string) => {
-    const newRoomId = Math.random().toString(36).substring(2, 8).toUpperCase();
-    onMultiplayerStart(newRoomId, username);
-  }, [onMultiplayerStart]);
-
-  const handleJoinRoom = useCallback((roomId: string, username: string) => {
-    onMultiplayerStart(roomId, username);
-  }, [onMultiplayerStart]);
+  const handleStartGame = useCallback((roomId: string, isHost: boolean) => {
+    onMultiplayerStart(roomId, isHost, username);
+  }, [onMultiplayerStart, username]);
 
   if (showMultiplayer) {
     return (
-      <MultiplayerLobby 
-        onCreateRoom={handleCreateRoom} 
-        onJoinRoom={handleJoinRoom}
-        onBack={() => setShowMultiplayer(false)} 
-      />
+      <div className={styles.multiplayerContainer}>
+        <MultiplayerLobby 
+          onStartGame={handleStartGame}
+          onBack={() => {
+            // Reset multiplayer state when going back
+            setShowMultiplayer(false);
+          }} 
+          initialRoomId={initialRoomId}
+        />
+      </div>
     );
   }
 

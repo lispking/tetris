@@ -10,13 +10,51 @@ import StartScreen from './StartScreen';
 import { placePiece } from '../utils/gameUtils';
 import styles from './Game.module.css';
 
-const Game: React.FC = () => {
+interface GameProps {
+  isMultiplayer?: boolean;
+  roomId?: string;
+  isHost?: boolean;
+  playerName?: string;
+  onLeaveRoom?: () => void;
+}
+
+const Game: React.FC<GameProps> = ({
+  isMultiplayer = false,
+  roomId = '',
+  isHost = false,
+  playerName: initialPlayerName = 'Player',
+  onLeaveRoom
+}) => {
+  // Game state
   const [clearedLines, setClearedLines] = useState<number[]>([]);
   const [scoreFlash, setScoreFlash] = useState(false);
-  const [isMultiplayer, setIsMultiplayer] = useState(false);
-  const [roomId, setRoomId] = useState('');
   const [prevScore, setPrevScore] = useState(0);
-  const [playerName, setPlayerName] = useState('Player');
+  
+  // Multiplayer state
+  const [playerName, setPlayerName] = useState(initialPlayerName);
+  const [, setIsHostState] = useState(isHost);
+  const [, setRoomIdState] = useState(roomId);
+  const [isMultiplayerState, setIsMultiplayerState] = useState(isMultiplayer);
+  
+  // Track previous level for level up detection
+  const [prevLevel, setPrevLevel] = useState(0);
+
+  // Handle multiplayer state changes
+  useEffect(() => {
+    setIsMultiplayerState(isMultiplayer);
+    setRoomIdState(roomId);
+    setIsHostState(isHost);
+    setPlayerName(initialPlayerName);
+  }, [isMultiplayer, roomId, isHost, initialPlayerName]);
+
+  // Clean up multiplayer state when unmounting
+  useEffect(() => {
+    return () => {
+      if (isMultiplayerState && onLeaveRoom) {
+        onLeaveRoom();
+      }
+    };
+  }, [isMultiplayerState, onLeaveRoom]);
   const { trackEvent, events } = useAnalytics();
   
   const {
@@ -68,7 +106,6 @@ const Game: React.FC = () => {
   }, [score, prevScore, gameStarted, level, trackEvent, events]);
   
   // Track level up
-  const [prevLevel, setPrevLevel] = useState(level);
   useEffect(() => {
     if (level > prevLevel) {
       trackEvent(events.LEVEL_UP, {
@@ -93,8 +130,8 @@ const Game: React.FC = () => {
   
   // Handle game start - single player
   const handleStartGame = useCallback(() => {
-    setIsMultiplayer(false);
-    setRoomId('');
+    setIsMultiplayerState(false);
+    setRoomIdState('');
     setPlayerName('Player');
     startTetrisGame();
     trackEvent(events.GAME_START, { 
@@ -105,32 +142,27 @@ const Game: React.FC = () => {
   }, [startTetrisGame, trackEvent, events, gameState.level]);
   
   // Handle multiplayer start
-  const handleMultiplayerStart = useCallback((roomId: string, username: string) => {
-    setIsMultiplayer(true);
-    setRoomId(roomId);
+  const handleMultiplayerStart = useCallback((roomId: string, isHost: boolean, username: string) => {
+    setIsMultiplayerState(true);
+    setRoomIdState(roomId);
+    setIsHostState(isHost);
     setPlayerName(username || 'Player');
+    
     // In a real implementation, you would connect to the multiplayer server here
     // and set up the game state accordingly
     startTetrisGame();
+    
     trackEvent(events.GAME_START, { 
       level: gameState.level,
       mode: 'multiplayer',
       roomId: roomId,
-      playerName: username || 'Player'
+      playerName: username || 'Player',
+      isHost: isHost
     });
-  }, [startTetrisGame, trackEvent, events, gameState.level]);
+    
+    console.log(`Multiplayer ${isHost ? 'host' : 'client'} started in room:`, roomId);
+  }, [startTetrisGame, trackEvent, events, gameState.level, isHost]);
   
-  // Handle multiplayer room creation
-  const handleCreateRoom = useCallback(async (username: string) => {
-    const newRoomId = Math.random().toString(36).substring(2, 8).toUpperCase();
-    trackEvent(events.MULTIPLAYER_ROOM_CREATED, { 
-      roomId: newRoomId,
-      playerName: username
-    });
-    handleMultiplayerStart(newRoomId, username);
-    return newRoomId;
-  }, [handleMultiplayerStart, trackEvent, events]);
-
   // Handle score animation when it changes
   useEffect(() => {
     if (gameStarted && gameState.score > prevScore) {

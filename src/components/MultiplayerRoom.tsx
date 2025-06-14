@@ -30,34 +30,54 @@ const MultiplayerRoom: React.FC<MultiplayerRoomProps> = ({
     const [error, setError] = useState('');
     const [copySuccess, setCopySuccess] = useState(false);
     const [localGameStarting, setLocalGameStarting] = useState(false);
+    const [countdown, setCountdown] = useState<number | null>(null);
     const [startTimeout, setStartTimeout] = useState<NodeJS.Timeout | null>(null);
+    const [countdownInterval, setCountdownInterval] = useState<NodeJS.Timeout | null>(null);
     const leaveSession = useLeaveSession();
     
-    // Handle game start timeout
+    // Handle game start countdown and timeout
     useEffect(() => {
         if (gameStatus === 'starting') {
+            // Start countdown from 3
+            setCountdown(3);
+            
+            // Update countdown every second
+            const interval = setInterval(() => {
+                setCountdown(prev => {
+                    if (prev === null || prev <= 1) {
+                        clearInterval(interval);
+                        return null;
+                    }
+                    return prev - 1;
+                });
+            }, 1000);
+            
+            setCountdownInterval(interval);
+            
+            // Set timeout to start the game after countdown
             const timer = setTimeout(() => {
-                console.log(playerName, 'Force transitioning to started state after timeout');
+                console.log(playerName, 'Starting game after countdown');
                 setGameStatus('started');
                 setLocalGameStarting(false);
-            }, 3000); // 3 second timeout
+                setCountdown(null);
+            }, 3000); // 3 second countdown
             
             setStartTimeout(timer);
             
             return () => {
+                if (interval) clearInterval(interval);
                 if (timer) clearTimeout(timer);
             };
         }
     }, [gameStatus, playerName]);
     
-    // Cleanup timeout on unmount
+    // Cleanup timeouts and intervals on unmount
     useEffect(() => {
         return () => {
-            if (startTimeout) {
-                clearTimeout(startTimeout);
-            }
+            if (startTimeout) clearTimeout(startTimeout);
+            if (countdownInterval) clearInterval(countdownInterval);
         };
-    }, [startTimeout]);
+    }, [startTimeout, countdownInterval]);
 
     const copyRoomUrl = () => {
         const url = `${window.location.origin}/multiplayer?room=${encodeURIComponent(roomId)}`;
@@ -215,9 +235,13 @@ const MultiplayerRoom: React.FC<MultiplayerRoomProps> = ({
         return (
             <div className={styles.roomContainer}>
                 <div className={styles.gameStarting}>
-                    <h3>Game is starting...</h3>
+                    <h3>Game is starting in...</h3>
+                    {countdown !== null && (
+                        <div className={styles.countdown}>
+                            {countdown}
+                        </div>
+                    )}
                     <p>Get ready to play!</p>
-                    <p className={styles.loadingText}>Please wait...</p>
                 </div>
             </div>
         );

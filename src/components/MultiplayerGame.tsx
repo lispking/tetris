@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTetris } from '../hooks/useTetris';
 import { useAnalytics } from '../contexts/AnalyticsContext';
+import { useStateTogether } from 'react-together';
 import Board from './Board';
 import GameInfo from './GameInfo';
 import NextPiecePreview from './NextPiecePreview';
@@ -8,6 +9,14 @@ import Controls from './Controls';
 import GameOver from './GameOver';
 import { placePiece } from '../utils/gameUtils';
 import styles from './Game.module.css';
+
+interface PlayerStats {
+  id: string;
+  name: string;
+  score: number;
+  level: number;
+  lines: number;
+}
 
 interface MultiplayerGameProps {
   roomId: string;
@@ -26,7 +35,8 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
   const [scoreFlash, setScoreFlash] = useState(false);
   const [prevScore, setPrevScore] = useState(0);
   const { trackEvent, events } = useAnalytics();
-
+  
+  // Get the tetris game state
   const {
     gameState,
     gameStarted,
@@ -40,6 +50,37 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
     move,
     rotate,
   } = useTetris();
+  
+  // Get and manage player stats in shared state
+  const [players, setPlayers] = useStateTogether<PlayerStats[]>('players', []);
+  
+  // Update local player's stats in shared state
+  useEffect(() => {
+    if (!gameStarted) return;
+    
+    const updatePlayerStats = (currentPlayers: PlayerStats[] = []) => {
+      const otherPlayers = currentPlayers.filter((p: PlayerStats) => p.id !== playerName);
+      return [
+        ...otherPlayers,
+        {
+          id: playerName,
+          name: playerName,
+          score: score,
+          level: level,
+          lines: gameState.lines
+        }
+      ];
+    };
+    
+    setPlayers(updatePlayerStats);
+  }, [playerName, score, level, gameState.lines, gameStarted, setPlayers]);
+  
+  // Find opponent (any player that's not the current player)
+  const opponent = React.useMemo(() => {
+    return players?.find((p: PlayerStats) => p.id !== playerName);
+  }, [players, playerName]);
+
+
 
   // Track game start
   useEffect(() => {
@@ -185,12 +226,30 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
         </div>
         
         <div className={styles.gameSidebar}>
-          <GameInfo 
-            score={score} 
-            level={level} 
-            lines={gameState.lines} 
-            scoreFlash={scoreFlash}
-          />
+          <div className={styles.playerStatsContainer}>
+            <div className={`${styles.playerStats} ${styles.currentPlayer}`}>
+              <h3>You</h3>
+              <GameInfo 
+                score={score} 
+                level={level} 
+                lines={gameState.lines} 
+                scoreFlash={scoreFlash}
+              />
+            </div>
+            
+            {opponent && (
+              <div className={`${styles.playerStats} ${styles.opponentPlayer}`}>
+                <h3>{opponent.name}</h3>
+                <GameInfo 
+                  score={opponent.score} 
+                  level={opponent.level} 
+                  lines={opponent.lines} 
+                  scoreFlash={false}
+                />
+              </div>
+            )}
+          </div>
+          
           <NextPiecePreview piece={gameState.nextPiece} />
           <Controls 
             onPause={togglePause}

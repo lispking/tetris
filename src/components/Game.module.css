@@ -400,6 +400,92 @@
   transform: scale(1.1);
 }
 
+/* Player Stats Container */
+.playerStatsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+  margin-bottom: 20px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+  padding: 15px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.playerStats {
+  background: rgba(30, 34, 42, 0.8);
+  border-radius: 8px;
+  padding: 15px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.playerStats.currentPlayer {
+  border-left: 3px solid #4FD2D2;
+}
+
+.playerStats.opponentPlayer {
+  border-left: 3px solid #FF6B6B;
+}
+
+.playerStats h3 {
+  margin: 0 0 12px 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.playerStats.currentPlayer h3::before {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background: #4FD2D2;
+  border-radius: 50%;
+  box-shadow: 0 0 8px #4FD2D2;
+}
+
+.playerStats.opponentPlayer h3::before {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background: #FF6B6B;
+  border-radius: 50%;
+  box-shadow: 0 0 8px #FF6B6B;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .playerStatsContainer {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  
+  .playerStats {
+    flex: 1;
+    min-width: 140px;
+  }
+}
+
+@media (max-width: 480px) {
+  .playerStatsContainer {
+    flex-direction: column;
+  }
+  
+  .playerStats {
+    width: 100%;
+  }
+}
+
 .copyButton:active {
   transform: scale(0.95);
   background: rgba(255, 255, 255, 0.15);

@@ -1,54 +1,71 @@
-# React + TypeScript + Vite
+# React Tetris Game
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern implementation of the classic Tetris game built with React, TypeScript, and Vite. This project features a responsive design, smooth animations, and all the classic Tetris gameplay mechanics you know and love.
 
-Currently, two official plugins are available:
+![Tetris Gameplay](https://raw.githubusercontent.com/lispking/tetris/main/screenshot.png)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🎮 Features
 
-## Expanding the ESLint configuration
+- 🕹️ Classic Tetris gameplay
+- 🖥️ Responsive design that works on all screen sizes
+- ⚡ Built with React 18 and TypeScript
+- 🎨 Modern UI with smooth animations
+- ⌨️ Keyboard controls for the best gaming experience
+- 📊 Score tracking and level progression
+- ⏯️ Pause/resume functionality
+- 🔄 Next piece preview
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## 🚀 Getting Started
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+### Prerequisites
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+- Node.js (v16 or later)
+- npm or pnpm (recommended)
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### Installation
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
-```
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/lispking/tetris.git
+   cd tetris
+   ```
+
+2. Install dependencies:
+   ```bash
+   pnpm install
+   # or
+   npm install
+   ```
+
+3. Start the development server:
+   ```bash
+   pnpm dev
+   # or
+   npm run dev
+   ```
+
+4. Open [http://localhost:5173](http://localhost:5173) in your browser to play!
+
+## 🎮 Controls
+
+- **Arrow Left/Right**: Move piece horizontally
+- **Arrow Down**: Soft drop (move down faster)
+- **Arrow Up**: Rotate piece clockwise
+- **Space**: Hard drop (instantly drop piece)
+- **P**: Pause/Resume game
+
+## 🛠️ Built With
+
+- [React](https://reactjs.org/) - JavaScript library for building user interfaces
+- [TypeScript](https://www.typescriptlang.org/) - Typed JavaScript
+- [Vite](https://vitejs.dev/) - Next Generation Frontend Tooling
+- [CSS Modules](https://github.com/css-modules/css-modules) - For scoped CSS
+
+## 📝 License
+
+This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- Inspired by the classic Tetris game
+- Built with ❤️ using modern web technologies

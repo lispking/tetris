@@ -16,6 +16,8 @@ interface PlayerStats {
   score: number;
   level: number;
   lines: number;
+  isGameOver?: boolean;
+  isPaused?: boolean;
 }
 
 interface MultiplayerGameProps {
@@ -50,12 +52,13 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
     resetGame,
     move,
     rotate,
+    isPaused
   } = useTetris();
   
   // Get and manage player stats in shared state
   const [players, setPlayers] = useStateTogether<PlayerStats[]>('players', []);
   
-  // Update local player's stats in shared state
+  // Update player stats with shared state
   useEffect(() => {
     if (!gameStarted) return;
     
@@ -68,13 +71,15 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
           name: playerName,
           score: score,
           level: level,
-          lines: gameState.lines
+          lines: gameState.lines,
+          isGameOver: isGameOver,
+          isPaused: isPaused
         }
       ];
     };
     
     setPlayers(updatePlayerStats);
-  }, [playerName, score, level, gameState.lines, gameStarted, setPlayers]);
+  }, [playerName, score, level, gameState.lines, gameStarted, setPlayers, isGameOver, isPaused]);
   
   // Find opponent (any player that's not the current player)
   const opponent = React.useMemo(() => {
@@ -198,8 +203,12 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
           </div>
           
           {opponent && (
-            <div className={`${styles.playerStatCard} ${styles.opponentCard}`}>
-              <div className={styles.playerNameTag}>{opponent.name}</div>
+            <div className={`${styles.playerStatCard} ${styles.opponentCard} ${opponent.isGameOver ? styles.gameOver : ''} ${opponent.isPaused ? styles.paused : ''}`}>
+              <div className={styles.playerNameTag}>
+                {opponent.name}
+                {opponent.isGameOver && <span className={styles.statusBadge}>GAME OVER</span>}
+                {opponent.isPaused && !opponent.isGameOver && <span className={styles.statusBadge}>PAUSED</span>}
+              </div>
               <GameInfo 
                 score={opponent.score} 
                 level={opponent.level} 
@@ -240,7 +249,7 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
             clearedLines={clearedLines}
           />
           {isGameOver && (
-            <GameOver score={score} onNewGame={handleNewGame} />
+            <GameOver score={score} onNewGame={handleNewGame} showNewGame={false} />
           )}
           {gameState.isPaused && (
             <div className={styles.pausedOverlay}>
@@ -263,6 +272,7 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
             onRotate={rotate}
             onHardDrop={() => move('drop')}
             onSoftDrop={() => move('down')}
+            showNewGame={false}
           />
         </div>
       </div>

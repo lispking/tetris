@@ -328,9 +328,19 @@ export const useTetris = () => {
       }
     };
   }, [gameStarted, gameState.isPaused, gameState.isGameOver, gameState.level, move]);
+  
+  // Handle pause state changes
+  useEffect(() => {
+    if (gameState.isPaused) {
+      setDropTime(null);
+    } else if (!gameState.isGameOver) {
+      const speed = Math.max(INITIAL_SPEED - (gameState.level - 1) * 100, 100);
+      setDropTime(speed);
+    }
+  }, [gameState.isPaused, gameState.isGameOver, gameState.level]);
 
   // Destructure commonly used properties for easier access
-  const { level, linesCleared, score, isGameOver } = gameState;
+  const { level, linesCleared, score, isGameOver, isPaused } = gameState;
 
   return {
     gameState,
@@ -347,5 +357,6 @@ export const useTetris = () => {
     linesCleared,
     score,
     isGameOver,
+    isPaused,
   };
 };

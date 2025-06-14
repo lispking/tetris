@@ -5,6 +5,7 @@ interface ControlsProps {
   onPause?: () => void;
   onNewGame?: () => void;
   isPaused?: boolean;
+  showNewGame?: boolean;
   onMoveLeft?: () => void;
   onMoveRight?: () => void;
   onRotate?: () => void;
@@ -16,6 +17,7 @@ const Controls: React.FC<ControlsProps> = ({
   onPause, 
   onNewGame, 
   isPaused = false,
+  showNewGame = true,
   onMoveLeft,
   onMoveRight,
   onRotate,
@@ -127,7 +129,7 @@ const Controls: React.FC<ControlsProps> = ({
                 <span className={styles.buttonIcon}>{isPaused ? '▶' : '❚❚'}</span>
               </button>
             )}
-            {onNewGame && (
+            {onNewGame && showNewGame && (
               <>
                 <button 
                   onClick={handleNewGameClick} 

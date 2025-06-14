@@ -62,6 +62,7 @@ export const logEvent = (action: string, params: Record<string, any> = {}): void
 export const Events = {
   GAME_START: 'game_start',
   GAME_OVER: 'game_over',
+  GAME_MODE_CHANGED: 'game_mode_changed',
   ROW_CLEAR: 'row_clear',
   SCORE_UPDATE: 'score_update',
   LEVEL_UP: 'level_up',
@@ -70,4 +71,8 @@ export const Events = {
   PAUSE: 'game_pause',
   RESUME: 'game_resume',
   NEW_GAME: 'new_game',
+  GAME_STARTED: 'game_started',
+  MULTIPLAYER_ROOM_CREATED: 'multiplayer_room_created',
+  MULTIPLAYER_ROOM_JOINED: 'multiplayer_room_joined',
+  MULTIPLAYER_CONNECTION_ERROR: 'multiplayer_connection_error',
 };

@@ -13,19 +13,35 @@ import styles from './Game.module.css';
 const Game: React.FC = () => {
   const [clearedLines, setClearedLines] = useState<number[]>([]);
   const [scoreFlash, setScoreFlash] = useState(false);
+  const [isMultiplayer, setIsMultiplayer] = useState(false);
+  const [roomId, setRoomId] = useState('');
   const [prevScore, setPrevScore] = useState(0);
+  const [playerName, setPlayerName] = useState('Player');
   const { trackEvent, events } = useAnalytics();
   
   const {
     gameState,
     gameStarted,
-    startGame,
-    resetGame,
     isGameOver,
     level,
     linesCleared,
     score,
+    togglePause,
+    startGame: startTetrisGame,
+    resetGame: resetTetrisGame,
+    move,
+    rotate,
   } = useTetris();
+  
+  // Track multiplayer mode changes
+  useEffect(() => {
+    if (gameStarted) {
+      trackEvent(events.GAME_MODE_CHANGED, {
+        mode: isMultiplayer ? 'multiplayer' : 'singleplayer',
+        roomId: isMultiplayer ? roomId || 'host' : null
+      });
+    }
+  }, [isMultiplayer, roomId, gameStarted, trackEvent, events]);
   
   // Track game over
   useEffect(() => {
@@ -75,17 +91,45 @@ const Game: React.FC = () => {
     }
   }, [clearedLines, level, score, trackEvent, events]);
   
-  // Track game start with a callback to avoid re-renders
+  // Handle game start - single player
   const handleStartGame = useCallback(() => {
-    startGame();
-    trackEvent(events.GAME_START, { level });
-  }, [startGame, trackEvent, events, level]);
+    setIsMultiplayer(false);
+    setRoomId('');
+    setPlayerName('Player');
+    startTetrisGame();
+    trackEvent(events.GAME_START, { 
+      level: gameState.level,
+      mode: 'singleplayer',
+      playerName: 'Player'
+    });
+  }, [startTetrisGame, trackEvent, events, gameState.level]);
   
-  // Track new game after game over
-  const handleNewGame = useCallback(() => {
-    resetGame();
-    trackEvent(events.NEW_GAME);
-  }, [resetGame, trackEvent, events]);
+  // Handle multiplayer start
+  const handleMultiplayerStart = useCallback((roomId: string, username: string) => {
+    setIsMultiplayer(true);
+    setRoomId(roomId);
+    setPlayerName(username || 'Player');
+    // In a real implementation, you would connect to the multiplayer server here
+    // and set up the game state accordingly
+    startTetrisGame();
+    trackEvent(events.GAME_START, { 
+      level: gameState.level,
+      mode: 'multiplayer',
+      roomId: roomId,
+      playerName: username || 'Player'
+    });
+  }, [startTetrisGame, trackEvent, events, gameState.level]);
+  
+  // Handle multiplayer room creation
+  const handleCreateRoom = useCallback(async (username: string) => {
+    const newRoomId = Math.random().toString(36).substring(2, 8).toUpperCase();
+    trackEvent(events.MULTIPLAYER_ROOM_CREATED, { 
+      roomId: newRoomId,
+      playerName: username
+    });
+    handleMultiplayerStart(newRoomId, username);
+    return newRoomId;
+  }, [handleMultiplayerStart, trackEvent, events]);
 
   // Handle score animation when it changes
   useEffect(() => {
@@ -141,69 +185,100 @@ const Game: React.FC = () => {
     }
   }, [gameState.linesCleared, gameState.board]);
 
-  // Handle game start - using the analytics-enhanced handler
-  const handleStart = () => {
-    setClearedLines([]);
-    setScoreFlash(false);
-    handleStartGame();
-  };
+
 
   // Handle new game after game over - using the analytics-enhanced handler
-  const handleNewGameClick = () => {
+  const handleNewGameClick = useCallback(() => {
     setClearedLines([]);
     setScoreFlash(false);
-    handleNewGame();
-  };
+    resetTetrisGame();
+    trackEvent(events.NEW_GAME);
+  }, [resetTetrisGame, trackEvent, events]);
 
   return (
     <div className={styles.gameContainer}>
-      {!gameStarted && <StartScreen onStart={handleStart} />}
-      
-      <div className={styles.gameHeader}>
-        <h1 className={`${styles.titleWrapper} ${scoreFlash ? styles.scoreFlash : ''}`}>
-          <span className={styles.tetrisIcon} aria-hidden="true">
-            <span className={styles.tetrisBlock}></span>
-            <span className={styles.tetrisBlock}></span>
-            <span className={styles.tetrisBlock}></span>
-            <span className={styles.tetrisBlock}></span>
-          </span>
-          <span className={styles.titleText}>
-            <span className={styles.titleGlow}>TETRIS</span>
-            <span className={styles.titleShadow} aria-hidden="true">TETRIS</span>
-          </span>
-        </h1>
-        {gameStarted && gameState.isPaused && (
-          <div className={styles.pausedOverlay}>
-            <div className={styles.pausedText}>
-              <span>PAUSED</span>
-              <div className={styles.pausedHint}>Press P to continue</div>
+      {!gameStarted ? (
+        <StartScreen 
+          onStart={handleStartGame} 
+          onMultiplayerStart={handleMultiplayerStart} 
+        />
+      ) : ( 
+        <>
+          {isMultiplayer && (
+            <div className={styles.multiplayerInfo}>
+              {roomId ? (
+                <div className={styles.multiplayerHeader}>
+                  <span className={styles.playerName}>Player: {playerName} </span>
+                  <span className={styles.roomId}>Room: {roomId}</span>
+                  <button 
+                    onClick={() => navigator.clipboard.writeText(roomId)}
+                    className={styles.copyButton}
+                    title="Copy Room ID"
+                  >
+                    📋
+                  </button>
+                </div>
+              ) : (
+                <div>Connecting to multiplayer...</div>
+              )}
+            </div>
+          )}
+          <div className={styles.gameHeader}>
+            <h1 className={`${styles.titleWrapper} ${scoreFlash ? styles.scoreFlash : ''}`}>
+              <span className={styles.tetrisIcon} aria-hidden="true">
+                <span className={styles.tetrisBlock}></span>
+                <span className={styles.tetrisBlock}></span>
+                <span className={styles.tetrisBlock}></span>
+                <span className={styles.tetrisBlock}></span>
+              </span>
+              <span className={styles.titleText}>
+                <span className={styles.titleGlow}>TETRIS</span>
+                <span className={styles.titleShadow} aria-hidden="true">TETRIS</span>
+              </span>
+            </h1>
+          </div>
+
+          <div className={styles.gameContent}>
+            <div className={styles.gameBoard}>
+              <Board 
+                board={renderBoard} 
+                clearedLines={clearedLines}
+              />
+              {isGameOver && (
+                <GameOver score={score} onNewGame={handleNewGameClick} />
+              )}
+              {gameState.isPaused && (
+                <div className={styles.pausedOverlay}>
+                  <div className={styles.pausedText}>
+                    <span>PAUSED</span>
+                    <div className={styles.pausedHint}>Press P to continue</div>
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            <div className={styles.gameSidebar}>
+              <GameInfo 
+                score={score} 
+                level={level} 
+                lines={gameState.lines} 
+                scoreFlash={scoreFlash}
+              />
+              <NextPiecePreview piece={gameState.nextPiece} />
+              <Controls 
+                onPause={togglePause}
+                onNewGame={handleNewGameClick}
+                isPaused={gameState.isPaused}
+                onMoveLeft={() => move('left')}
+                onMoveRight={() => move('right')}
+                onRotate={rotate}
+                onHardDrop={() => move('drop')}
+                onSoftDrop={() => move('down')}
+              />
             </div>
           </div>
-        )}
-      </div>
-      
-      <div className={styles.gameContent}>
-        <div className={styles.gameBoard}>
-          <Board 
-            board={renderBoard} 
-            clearedLines={clearedLines}
-          />
-          {gameState.isGameOver && (
-            <GameOver score={gameState.score} onNewGame={handleNewGameClick} />
-          )}
-        </div>
-        
-        <div className={styles.gameSidebar}>
-          <GameInfo 
-            score={gameState.score} 
-            level={gameState.level} 
-            lines={gameState.lines} 
-            scoreFlash={scoreFlash}
-          />
-          <NextPiecePreview piece={gameState.nextPiece} />
-          <Controls />
-        </div>
-      </div>
+        </>
+      )}
     </div>
   );
 };

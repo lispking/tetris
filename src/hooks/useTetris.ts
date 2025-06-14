@@ -335,6 +335,7 @@ export const useTetris = () => {
   return {
     gameState,
     dropTime,
+    setDropTime, // Expose setDropTime
     gameStarted,
     startGame,
     togglePause,

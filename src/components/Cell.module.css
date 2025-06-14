@@ -5,6 +5,8 @@
   box-sizing: border-box;
   perspective: 1000px;
   transform-style: preserve-3d;
+  overflow: visible;
+  z-index: 1;
 }
 
 .innerCell {
@@ -40,22 +42,115 @@
 
 /* Clearing animation */
 .cell.clearing .innerCell {
-  animation: clearAnimation 0.3s ease-out var(--delay) forwards;
+  animation: clearAnimation 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) var(--delay) forwards;
+  transform-origin: center;
+  filter: brightness(1.5) saturate(1.5);
+  box-shadow: 0 0 15px 5px rgba(255, 255, 255, 0.8);
+  z-index: 10;
 }
 
 @keyframes clearAnimation {
   0% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+    filter: brightness(2) saturate(2) drop-shadow(0 0 10px rgba(255, 255, 255, 0.8));
+  }
+  30% {
+    transform: scale(1.4) rotate(10deg);
+    filter: brightness(3) saturate(3) drop-shadow(0 0 20px rgba(255, 255, 255, 1));
+  }
+  70% {
+    transform: scale(0.5) rotate(-15deg);
+    opacity: 0.7;
+    filter: brightness(4) saturate(4) drop-shadow(0 0 25px rgba(255, 255, 255, 1));
+  }
+  100% {
+    transform: scale(0) rotate(30deg);
+    opacity: 0;
+    filter: brightness(5) saturate(5) drop-shadow(0 0 30px rgba(255, 255, 255, 1));
+  }
+}
+
+/* Particle explosion effect */
+.particle {
+  position: absolute;
+  left: var(--particle-x, 50%);
+  top: var(--particle-y, 50%);
+  width: var(--particle-size, 0.3em);
+  height: var(--particle-size, 0.3em);
+  background-color: var(--particle-color, #ffffff);
+  border-radius: 50%;
+  opacity: var(--particle-opacity, 1);
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.8));
+  will-change: transform, opacity;
+  transition: opacity 0.1s ease-out;
+}
+
+/* Cell clearing animation */
+.cell.clearing {
+  position: relative;
+  overflow: visible;
+  z-index: 10;
+  animation: cellFadeOut 0.2s ease-out forwards;
+}
+
+@keyframes cellFadeOut {
+  0% {
     transform: scale(1);
     opacity: 1;
   }
-  50% {
-    transform: scale(1.2);
+  20% {
+    transform: scale(1.05);
+    filter: brightness(1.5) saturate(2);
+  }
+  70% {
     opacity: 0.8;
-    filter: brightness(1.5);
   }
   100% {
-    transform: scale(0);
+    transform: scale(0.95);
     opacity: 0;
+    filter: brightness(2) saturate(3) blur(1px);
+  }
+}
+
+/* Inner cell styling during clear */
+.cell.clearing .innerCell {
+  position: relative;
+  overflow: visible;
+  height: 100%;
+  width: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.3s ease-out;
+}
+
+/* Add a subtle glow to the cell when clearing */
+.cell.clearing::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(
+    circle at center,
+    rgba(255, 255, 255, 0.6) 0%,
+    transparent 70%
+  );
+  opacity: 0;
+  animation: glowPulse 0.2s ease-out forwards;
+  z-index: -1;
+}
+
+@keyframes glowPulse {
+  0%, 100% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.1);
   }
 }
 

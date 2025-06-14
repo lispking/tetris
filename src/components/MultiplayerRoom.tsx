@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useLeaveSession, useStateTogether } from 'react-together';
 import styles from './MultiplayerRoom.module.css';
+import MultiplayerGame from './MultiplayerGame';
 
 interface Player {
     id: string;
@@ -14,22 +15,49 @@ interface Player {
 interface MultiplayerRoomProps {
     roomId: string;
     playerName: string;
-    onStartGame: () => void;
     onLeave: () => void;
 }
 
 const MultiplayerRoom: React.FC<MultiplayerRoomProps> = ({
     roomId,
     playerName,
-    onStartGame,
     onLeave,
 }) => {
     const [players, setPlayers] = useStateTogether<Player[]>('players', []);
     const [isReady, setIsReady] = useStateTogether<boolean>(`${playerName}-ready`, false);
-    const [gameStarted, setGameStarted] = useStateTogether<boolean>('gameStarted', false);
+    const [gameStatus, setGameStatus] = useStateTogether<'waiting' | 'starting' | 'started'>('gameStatus', 'waiting');
+    const isHost = players.length === 0; // First player is host
     const [error, setError] = useState('');
     const [copySuccess, setCopySuccess] = useState(false);
-    const leaveSession = useLeaveSession()
+    const [localGameStarting, setLocalGameStarting] = useState(false);
+    const [startTimeout, setStartTimeout] = useState<NodeJS.Timeout | null>(null);
+    const leaveSession = useLeaveSession();
+    
+    // Handle game start timeout
+    useEffect(() => {
+        if (gameStatus === 'starting') {
+            const timer = setTimeout(() => {
+                console.log(playerName, 'Force transitioning to started state after timeout');
+                setGameStatus('started');
+                setLocalGameStarting(false);
+            }, 3000); // 3 second timeout
+            
+            setStartTimeout(timer);
+            
+            return () => {
+                if (timer) clearTimeout(timer);
+            };
+        }
+    }, [gameStatus, playerName]);
+    
+    // Cleanup timeout on unmount
+    useEffect(() => {
+        return () => {
+            if (startTimeout) {
+                clearTimeout(startTimeout);
+            }
+        };
+    }, [startTimeout]);
 
     const copyRoomUrl = () => {
         const url = `${window.location.origin}/multiplayer?room=${encodeURIComponent(roomId)}`;
@@ -133,22 +161,41 @@ const MultiplayerRoom: React.FC<MultiplayerRoomProps> = ({
         });
     }, [playerName]); // Removed isReady from deps since we use the updater form
 
-    const handleStartGame = useCallback(() => {
+    const handleStartGame = useCallback(async () => {
         if (!Array.isArray(players) || players.length === 0) {
+            console.log('No players in the room');
             setError('No players in the room');
             return;
         }
         
         const allReady = players.length >= 2 && players.every(p => p.isReady);
         if (allReady) {
-            setGameStarted(true);
-            onStartGame();
+            console.log('All players are ready, preparing to start the game...');
+            
+            // Set local loading state for immediate UI feedback
+            setLocalGameStarting(true);
+            
+            // Update shared game status to 'starting' and then to 'started' after delay
+            await setGameStatus('starting');
+            console.log(playerName, 'Game status set to: starting');
+            
+            // Wait for all players to receive the 'starting' state
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            
+            // Then update to 'started' to begin the game
+            await setGameStatus('started');
+            console.log(playerName, 'Game status set to: started');
+            
+            // Clear local loading state in case it's still active
+            setLocalGameStarting(false);
         } else {
-            setError(players.length < 2 ? 
+            const errorMsg = players.length < 2 ? 
                 'At least 2 players are needed to start' : 
-                'All players must be ready to start');
+                'All players must be ready to start';
+            console.log(playerName, 'Cannot start game:', errorMsg);
+            setError(errorMsg);
         }
-    }, [players, onStartGame]);
+    }, [players, playerName, setGameStatus]);
 
     const handleLeaveRoom = useCallback(() => {
         // First update local state to prevent UI flicker
@@ -161,8 +208,32 @@ const MultiplayerRoom: React.FC<MultiplayerRoomProps> = ({
         onLeave();
     }, [leaveSession, onLeave]);
 
-    // If game has started, the parent component will handle the transition
-    if (gameStarted) return null;
+    // Show game starting message
+    if (localGameStarting || gameStatus === 'starting') {
+        console.log(playerName, 'Game is starting... current status:', { localGameStarting, gameStatus });
+        
+        return (
+            <div className={styles.roomContainer}>
+                <div className={styles.gameStarting}>
+                    <h3>Game is starting...</h3>
+                    <p>Get ready to play!</p>
+                    <p className={styles.loadingText}>Please wait...</p>
+                </div>
+            </div>
+        );
+    }
+    
+    // If game has started, render the MultiplayerGame component
+    if (gameStatus === 'started') {
+        return (
+            <MultiplayerGame 
+                roomId={roomId}
+                isHost={isHost}
+                playerName={playerName}
+                onLeave={handleLeaveRoom}
+            />
+        );
+    }
 
     return (
         <div className={styles.roomContainer}>

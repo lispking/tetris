@@ -3,115 +3,179 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100vh;
-  background-color: #1a1a2e;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
   color: #fff;
-  padding: 20px;
+  padding: 2rem 1rem;
   text-align: center;
-}
-
-.backButton {
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  background: none;
-  border: 1px solid #4cc9f0;
-  color: #4cc9f0;
-  padding: 8px 16px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: all 0.3s ease;
-}
-
-.backButton:hover {
-  background: rgba(76, 201, 240, 0.1);
+  position: relative;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .lobbyContent {
-  background: rgba(26, 26, 46, 0.9);
-  padding: 2rem;
-  border-radius: 10px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  max-width: 500px;
+  background: rgba(26, 32, 44, 0.95);
+  padding: 2.5rem;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  max-width: 480px;
   width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px);
+  transform: translateZ(0);
+  position: relative;
+  overflow: hidden;
+}
+
+.lobbyContent::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #4cc9f0, #4895ef);
 }
 
 .lobbyContent h2 {
-  margin-bottom: 1.5rem;
-  color: #4cc9f0;
+  margin: 0 0 2rem 0;
+  color: #fff;
   font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-.usernameSection {
-  margin-bottom: 2rem;
+.formGroup {
+  margin-bottom: 1.5rem;
   text-align: left;
 }
 
-.usernameSection label {
+.formGroup label {
   display: block;
   margin-bottom: 0.5rem;
-  color: #a8dadc;
+  color: #a0aec0;
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .inputField {
   width: 100%;
-  padding: 0.75rem;
-  margin-bottom: 1rem;
-  border: 1px solid #4a4e69;
-  border-radius: 4px;
-  background: rgba(255, 255, 255, 0.05);
-  color: #fff;
+  padding: 0.875rem 1.25rem;
   font-size: 1rem;
+  background: rgba(15, 23, 42, 0.7);
+  border: 2px solid #2d3748;
+  border-radius: 10px;
+  color: #f7fafc;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: inherit;
 }
 
 .inputField:focus {
   outline: none;
   border-color: #4cc9f0;
-  box-shadow: 0 0 0 2px rgba(76, 201, 240, 0.3);
+  background: rgba(15, 23, 42, 0.9);
+  box-shadow: 0 0 0 3px rgba(76, 201, 240, 0.2);
 }
 
-.roomActions {
+.inputField::placeholder {
+  color: #4a5568;
+  opacity: 1;
+}
+
+.buttonGroup {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1rem;
+  margin-top: 2rem;
 }
 
-.actionButton {
-  background: linear-gradient(135deg, #4cc9f0, #4895ef);
-  color: white;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 4px;
+.primaryButton,
+.secondaryButton,
+.backButton {
+  padding: 1rem 1.5rem;
   font-size: 1rem;
   font-weight: 600;
+  border: none;
+  border-radius: 10px;
   cursor: pointer;
-  transition: all 0.3s ease;
-  width: 100%;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-family: inherit;
 }
 
-.actionButton:hover:not(:disabled) {
+.primaryButton {
+  background: linear-gradient(135deg, #4cc9f0 0%, #4895ef 100%);
+  color: white;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.primaryButton:not(:disabled):hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(76, 201, 240, 0.3);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
 }
 
-.actionButton:disabled {
-  background: #4a4e69;
+.secondaryButton {
+  background: rgba(74, 85, 104, 0.7);
+  color: #e2e8f0;
+  border: 1px solid #4a5568;
+}
+
+.secondaryButton:not(:disabled):hover {
+  background: rgba(74, 85, 104, 1);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.backButton {
+  background: transparent;
+  color: #a0aec0;
+  border: 1px solid #4a5568;
+  margin-top: 0.5rem;
+}
+
+.backButton:hover {
+  background: rgba(74, 85, 104, 0.2);
+  color: #e2e8f0;
+}
+
+button:disabled {
+  opacity: 0.6;
   cursor: not-allowed;
-  opacity: 0.7;
   transform: none !important;
   box-shadow: none !important;
 }
 
-.errorMessage {
-  color: #ff6b6b;
-  background-color: rgba(255, 107, 107, 0.1);
-  padding: 0.75rem 1rem;
-  border-radius: 4px;
-  margin: 0.5rem 0;
+.error {
+  margin: 1rem 0;
+  padding: 0.875rem 1.25rem;
+  background: rgba(254, 178, 178, 0.1);
+  color: #feb2b2;
+  border-radius: 8px;
   font-size: 0.9rem;
-  text-align: center;
-  border-left: 3px solid #ff6b6b;
+  border-left: 3px solid #feb2b2;
+  animation: fadeIn 0.3s ease-out;
+  text-align: left;
+}
+
+.errorMessage {
+  color: #feb2b2;
+  background-color: rgba(254, 178, 178, 0.1);
+  padding: 0.875rem 1.25rem;
+  border-radius: 8px;
+  margin: 1rem 0;
+  font-size: 0.9rem;
+  border-left: 3px solid #feb2b2;
+  animation: fadeIn 0.3s ease-out;
+  text-align: left;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .divider {

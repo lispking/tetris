@@ -23,6 +23,7 @@ const AppRoutes: React.FC = () => {
   };
 
   const handleMultiplayerStart = (roomId: string, isHost: boolean, playerName: string) => {
+    console.log(roomId, 'Starting multiplayer game for', playerName);
     setMultiplayerState({
       isMultiplayer: true,
       roomId,
@@ -30,8 +31,6 @@ const AppRoutes: React.FC = () => {
       playerName
     });
     setGameStarted(true);
-    // Update URL to include room ID
-    navigate(`/multiplayer?room=${encodeURIComponent(roomId)}`);
   };
 
   const handleLeaveRoom = () => {
@@ -55,6 +54,7 @@ const AppRoutes: React.FC = () => {
   };
 
   if (gameStarted) {
+    console.log('Game started for', multiplayerState.playerName);
     return (
       <Game 
         isMultiplayer={multiplayerState.isMultiplayer}

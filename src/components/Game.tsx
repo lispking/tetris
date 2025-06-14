@@ -29,13 +29,13 @@ const Game: React.FC<GameProps> = ({
   const [clearedLines, setClearedLines] = useState<number[]>([]);
   const [scoreFlash, setScoreFlash] = useState(false);
   const [prevScore, setPrevScore] = useState(0);
-  
+
   // Multiplayer state
   const [playerName, setPlayerName] = useState(initialPlayerName);
   const [, setIsHostState] = useState(isHost);
   const [, setRoomIdState] = useState(roomId);
   const [isMultiplayerState, setIsMultiplayerState] = useState(isMultiplayer);
-  
+
   // Track previous level for level up detection
   const [prevLevel, setPrevLevel] = useState(0);
 
@@ -50,13 +50,15 @@ const Game: React.FC<GameProps> = ({
   // Clean up multiplayer state when unmounting
   useEffect(() => {
     return () => {
+      console.log('Game component unmounting, cleaning up...');
       if (isMultiplayerState && onLeaveRoom) {
+        console.log(playerName, 'Leaving multiplayer room...');
         onLeaveRoom();
       }
     };
   }, [isMultiplayerState, onLeaveRoom]);
   const { trackEvent, events } = useAnalytics();
-  
+
   const {
     gameState,
     gameStarted,
@@ -70,7 +72,7 @@ const Game: React.FC<GameProps> = ({
     move,
     rotate,
   } = useTetris();
-  
+
   // Track multiplayer mode changes
   useEffect(() => {
     if (gameStarted) {
@@ -80,7 +82,7 @@ const Game: React.FC<GameProps> = ({
       });
     }
   }, [isMultiplayer, roomId, gameStarted, trackEvent, events]);
-  
+
   // Track game over
   useEffect(() => {
     if (isGameOver && gameStarted) {
@@ -91,7 +93,7 @@ const Game: React.FC<GameProps> = ({
       });
     }
   }, [isGameOver, gameStarted, score, level, linesCleared, trackEvent, events]);
-  
+
   // Track score changes
   useEffect(() => {
     if (gameStarted && score > prevScore) {
@@ -104,7 +106,7 @@ const Game: React.FC<GameProps> = ({
       setPrevScore(score);
     }
   }, [score, prevScore, gameStarted, level, trackEvent, events]);
-  
+
   // Track level up
   useEffect(() => {
     if (level > prevLevel) {
@@ -115,7 +117,7 @@ const Game: React.FC<GameProps> = ({
       setPrevLevel(level);
     }
   }, [level, prevLevel, linesCleared, trackEvent, events]);
-  
+
   // Track row clears
   useEffect(() => {
     if (clearedLines.length > 0) {
@@ -127,56 +129,34 @@ const Game: React.FC<GameProps> = ({
       });
     }
   }, [clearedLines, level, score, trackEvent, events]);
-  
+
   // Handle game start - single player
   const handleStartGame = useCallback(() => {
     setIsMultiplayerState(false);
     setRoomIdState('');
     setPlayerName('Player');
     startTetrisGame();
-    trackEvent(events.GAME_START, { 
+    trackEvent(events.GAME_START, {
       level: gameState.level,
       mode: 'singleplayer',
       playerName: 'Player'
     });
   }, [startTetrisGame, trackEvent, events, gameState.level]);
-  
-  // Handle multiplayer start
-  const handleMultiplayerStart = useCallback((roomId: string, isHost: boolean, username: string) => {
-    setIsMultiplayerState(true);
-    setRoomIdState(roomId);
-    setIsHostState(isHost);
-    setPlayerName(username || 'Player');
-    
-    // In a real implementation, you would connect to the multiplayer server here
-    // and set up the game state accordingly
-    startTetrisGame();
-    
-    trackEvent(events.GAME_START, { 
-      level: gameState.level,
-      mode: 'multiplayer',
-      roomId: roomId,
-      playerName: username || 'Player',
-      isHost: isHost
-    });
-    
-    console.log(`Multiplayer ${isHost ? 'host' : 'client'} started in room:`, roomId);
-  }, [startTetrisGame, trackEvent, events, gameState.level, isHost]);
-  
+
   // Handle score animation when it changes
   useEffect(() => {
     if (gameStarted && gameState.score > prevScore) {
       // Only flash if the score increased (not on game start)
       const scoreIncrease = gameState.score - prevScore;
-      
+
       // More pronounced flash for bigger score increases
       const flashDuration = Math.min(800, 300 + (scoreIncrease / 100) * 50);
-      
+
       setScoreFlash(true);
       const timer = setTimeout(() => {
         setScoreFlash(false);
       }, flashDuration);
-      
+
       setPrevScore(gameState.score);
       return () => clearTimeout(timer);
     }
@@ -200,14 +180,14 @@ const Game: React.FC<GameProps> = ({
     if (gameState.linesCleared > 0) {
       // Find which lines were cleared by checking for complete rows
       const newClearedLines: number[] = [];
-      
+
       // Check each row from bottom to top
       for (let y = 0; y < gameState.board.length; y++) {
         if (gameState.board[y].every(cell => cell.type)) {
           newClearedLines.push(y);
         }
       }
-      
+
       if (newClearedLines.length > 0) {
         setClearedLines(newClearedLines);
         // Clear the animation after it completes
@@ -230,11 +210,10 @@ const Game: React.FC<GameProps> = ({
   return (
     <div className={styles.gameContainer}>
       {!gameStarted ? (
-        <StartScreen 
-          onStart={handleStartGame} 
-          onMultiplayerStart={handleMultiplayerStart} 
+        <StartScreen
+          onStart={handleStartGame}
         />
-      ) : ( 
+      ) : (
         <>
           {isMultiplayer && (
             <div className={styles.multiplayerInfo}>
@@ -242,7 +221,7 @@ const Game: React.FC<GameProps> = ({
                 <div className={styles.multiplayerHeader}>
                   <span className={styles.playerName}>Player: {playerName} </span>
                   <span className={styles.roomId}>Room: {roomId}</span>
-                  <button 
+                  <button
                     onClick={() => navigator.clipboard.writeText(roomId)}
                     className={styles.copyButton}
                     title="Copy Room ID"
@@ -272,8 +251,8 @@ const Game: React.FC<GameProps> = ({
 
           <div className={styles.gameContent}>
             <div className={styles.gameBoard}>
-              <Board 
-                board={renderBoard} 
+              <Board
+                board={renderBoard}
                 clearedLines={clearedLines}
               />
               {isGameOver && (
@@ -288,16 +267,16 @@ const Game: React.FC<GameProps> = ({
                 </div>
               )}
             </div>
-            
+
             <div className={styles.gameSidebar}>
-              <GameInfo 
-                score={score} 
-                level={level} 
-                lines={gameState.lines} 
+              <GameInfo
+                score={score}
+                level={level}
+                lines={gameState.lines}
                 scoreFlash={scoreFlash}
               />
               <NextPiecePreview piece={gameState.nextPiece} />
-              <Controls 
+              <Controls
                 onPause={togglePause}
                 onNewGame={handleNewGameClick}
                 isPaused={gameState.isPaused}

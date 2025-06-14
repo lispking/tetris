@@ -1,16 +1,14 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from './StartScreen.module.css';
 import MultiplayerLobby from './MultiplayerLobby';
 
 interface StartScreenProps {
   onStart: () => void;
-  onMultiplayerStart: (roomId: string, isHost: boolean, playerName: string) => void;
   initialRoomId?: string;
 }
 
-const StartScreen: React.FC<StartScreenProps> = ({ onStart, onMultiplayerStart, initialRoomId = '' }) => {
+const StartScreen: React.FC<StartScreenProps> = ({ onStart, initialRoomId = '' }) => {
   const [showMultiplayer, setShowMultiplayer] = useState(!!initialRoomId);
-  const [username, setUsername] = useState('Player');
   
   // Auto-connect to the room if initialRoomId is provided
   useEffect(() => {
@@ -23,32 +21,11 @@ const StartScreen: React.FC<StartScreenProps> = ({ onStart, onMultiplayerStart, 
       return () => clearTimeout(timer);
     }
   }, [initialRoomId, showMultiplayer]);
-  
-  // Load saved username if available
-  useEffect(() => {
-    const loadUsername = async () => {
-      try {
-        const savedName = localStorage.getItem('tetris-player-name');
-        if (savedName) {
-          setUsername(savedName);
-        }
-      } catch (error) {
-        console.error('Error loading username:', error);
-      }
-    };
-    
-    loadUsername();
-  }, []);
-
-  const handleStartGame = useCallback((roomId: string, isHost: boolean) => {
-    onMultiplayerStart(roomId, isHost, username);
-  }, [onMultiplayerStart, username]);
 
   if (showMultiplayer) {
     return (
       <div className={styles.multiplayerContainer}>
         <MultiplayerLobby 
-          onStartGame={handleStartGame}
           onBack={() => {
             // Reset multiplayer state when going back
             setShowMultiplayer(false);

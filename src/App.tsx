@@ -22,17 +22,6 @@ const AppRoutes: React.FC = () => {
     setGameStarted(true);
   };
 
-  const handleMultiplayerStart = (roomId: string, isHost: boolean, playerName: string) => {
-    console.log(roomId, 'Starting multiplayer game for', playerName);
-    setMultiplayerState({
-      isMultiplayer: true,
-      roomId,
-      isHost,
-      playerName
-    });
-    setGameStarted(true);
-  };
-
   const handleLeaveRoom = () => {
     // Keep the roomId for navigating back to the multiplayer page
     const currentRoomId = multiplayerState.roomId;
@@ -73,7 +62,6 @@ const AppRoutes: React.FC = () => {
         element={
           <StartScreen 
             onStart={handleStartGame} 
-            onMultiplayerStart={handleMultiplayerStart} 
             initialRoomId={roomId} 
           />
         } 
@@ -83,7 +71,6 @@ const AppRoutes: React.FC = () => {
         element={
           <StartScreen 
             onStart={handleStartGame} 
-            onMultiplayerStart={handleMultiplayerStart} 
             initialRoomId={roomId} 
           />
         } 

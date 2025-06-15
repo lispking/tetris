@@ -6,8 +6,8 @@ import Board from './Board';
 import GameInfo from './GameInfo';
 import NextPiecePreview from './NextPiecePreview';
 import Controls from './Controls';
-import GameOver from './GameOver';
 import Countdown from './Countdown';
+import MultiplayerGameOver from './MultiplayerGameOver';
 import { placePiece } from '../utils/gameUtils';
 import styles from './Game.module.css';
 
@@ -40,6 +40,7 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
   const [prevScore, setPrevScore] = useState(0);
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
   const [showCountdown, setShowCountdown] = useState(true);
+  const [allPlayersGameOver, setAllPlayersGameOver] = useState(false);
   const { trackEvent, events } = useAnalytics();
   const myId = useMyId();
   const gameStartedRef = useRef(false);
@@ -99,7 +100,7 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
     }
   }, [gameStarted, roomId, playerName, isHost, trackEvent, events]);
 
-  // Track game over
+  // Track game over and check if all players are done
   useEffect(() => {
     if (isGameOver && gameStarted) {
       trackEvent(events.GAME_OVER, {
@@ -109,8 +110,18 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
         mode: 'multiplayer',
         roomId
       });
+      
+      // Check if all players are game over
+      const allOver = Object.values(playerStatsByUser).every(user => {
+        const stats = Object.values(user)[0];
+        return stats?.isGameOver;
+      });
+      
+      if (allOver) {
+        setAllPlayersGameOver(true);
+      }
     }
-  }, [isGameOver, gameStarted, score, level, linesCleared, roomId, trackEvent, events]);
+  }, [isGameOver, gameStarted, score, level, linesCleared, roomId, trackEvent, events, playerStatsByUser]);
 
   // Track score changes
   useEffect(() => {
@@ -181,6 +192,7 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
   const handleNewGame = useCallback(() => {
     setClearedLines([]);
     setScoreFlash(false);
+    setAllPlayersGameOver(false);
     resetGame();
     trackEvent(events.NEW_GAME, { mode: 'multiplayer', roomId });
     startGame();
@@ -198,6 +210,7 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
           countFrom={3}
         />
       )}
+      
       {/* Player Stats Header */}
       <div className={styles.gameHeader}>
         <div className={styles.gameTitle}>
@@ -305,8 +318,17 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
             board={renderBoard}
             clearedLines={clearedLines}
           />
-          {isGameOver && (
-            <GameOver score={score} onNewGame={handleNewGame} showNewGame={false} />
+          {allPlayersGameOver && (
+            <MultiplayerGameOver
+              playerResults={Object.entries(playerStatsByUser).map(([id, users]) => ({
+                id,
+                name: users[id]?.name || 'Unknown',
+                score: users[id]?.score || 0,
+                isYou: id === myId,
+              }))}
+              onNewGame={handleNewGame}
+              onBackToLobby={onLeave}
+            />
           )}
           {gameState.isPaused && (
             <div className={styles.pausedOverlay}>

@@ -50,6 +50,55 @@
   border-left: 4px solid #ffcc00;
 }
 
+/* Individual game over overlay in multiplayer */
+.individualGameOver {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 20; /* Higher than board but below global game over */
+  pointer-events: none; /* Allow clicks to pass through to the board */
+}
+
+.individualGameOver > * {
+  pointer-events: auto; /* But make the content clickable */
+  transform: scale(0.9);
+  opacity: 0.95;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.individualGameOver:hover > * {
+  transform: scale(0.92);
+  opacity: 1;
+}
+
+/* Ensure the game board is still visible but dimmed */
+.gameBoard {
+  position: relative;
+}
+
+.gameBoard::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.3);
+  z-index: 15;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.gameBoard.gameOverActive::after {
+  opacity: 1;
+}
+
 .gameTitle {
   margin-bottom: 15px;
 }

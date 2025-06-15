@@ -8,6 +8,7 @@ import NextPiecePreview from './NextPiecePreview';
 import Controls from './Controls';
 import Countdown from './Countdown';
 import MultiplayerGameOver from './MultiplayerGameOver';
+import GameOver from './GameOver';
 import { placePiece } from '../utils/gameUtils';
 import styles from './Game.module.css';
 
@@ -110,13 +111,13 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
         mode: 'multiplayer',
         roomId
       });
-      
+
       // Check if all players are game over
       const allOver = Object.values(playerStatsByUser).every(user => {
         const stats = Object.values(user)[0];
         return stats?.isGameOver;
       });
-      
+
       if (allOver) {
         setAllPlayersGameOver(true);
       }
@@ -210,7 +211,7 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
           countFrom={3}
         />
       )}
-      
+
       {/* Player Stats Header */}
       <div className={styles.gameHeader}>
         <div className={styles.gameTitle}>
@@ -284,9 +285,9 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
             {showLeaveConfirm && (
               <div className={styles.confirmDialogOverlay}>
                 <div className={styles.confirmContent}>
-                  <p>Leave game?<br/>Current progress will be lost.</p>
+                  <p>Leave game?<br />Current progress will be lost.</p>
                   <div className={styles.confirmButtons}>
-                    <button 
+                    <button
                       onClick={(e) => {
                         e.stopPropagation();
                         onLeave();
@@ -295,7 +296,7 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
                     >
                       Leave
                     </button>
-                    <button 
+                    <button
                       onClick={(e) => {
                         e.stopPropagation();
                         setShowLeaveConfirm(false);
@@ -313,11 +314,22 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
       </div>
 
       <div className={styles.gameContent}>
-        <div className={styles.gameBoard}>
+        <div className={`${styles.gameBoard} ${isGameOver ? styles.gameOverActive : ''}`}>
+          {/* Game board content */}
           <Board
             board={renderBoard}
             clearedLines={clearedLines}
           />
+          {isGameOver && !allPlayersGameOver && (
+            <div className={styles.individualGameOver}>
+              <GameOver
+                score={score}
+                level={level}
+                lines={gameState.lines}
+                isMultiplayer={true}
+              />
+            </div>
+          )}
           {allPlayersGameOver && (
             <MultiplayerGameOver
               playerResults={Object.entries(playerStatsByUser).map(([id, users]) => ({

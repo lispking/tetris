@@ -35,9 +35,16 @@ export const useTetris = () => {
       ...INITIAL_GAME_STATE,
       currentPiece: initialPiece,
       nextPiece: nextPiece,
+      isGameOver: false,
+      isPaused: false,
+      score: 0,
+      level: 1,
+      lines: 0,
+      position: { x: Math.floor(BOARD_WIDTH / 2) - 2, y: 0 },
+      board: createBoard(),
     });
     setDropTime(INITIAL_SPEED);
-    setGameStarted(false);
+    // Don't set gameStarted to false to stay in the game
   }, []);
 
   // Start a new game

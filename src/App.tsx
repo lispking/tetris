@@ -1,22 +1,33 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useSearchParams } from 'react-router-dom';
 import Game from './components/Game';
 import StartScreen from './components/StartScreen';
 import './App.css';
 
-const AppRoutes: React.FC = () => {
+const GameRoutes: React.FC = () => {
   const [searchParams] = useSearchParams();
   const roomId = searchParams.get('room') || '';
   const [gameStarted, setGameStarted] = useState(false);
   
-  const handleStartGame = () => {
+  const handleStartGame = useCallback(() => {
     setGameStarted(true);
-  };
+  }, []);
+
+  const handleGoHome = useCallback(() => {
+    setGameStarted(false);
+  }, []);
+  
+  // Reset game state when returning home
+  useEffect(() => {
+    return () => {
+      if (!gameStarted) {
+        // Any cleanup needed when going back to start screen
+      }
+    };
+  }, [gameStarted]);
 
   if (gameStarted) {
-    return (
-      <Game />
-    );
+    return <Game onGoHome={handleGoHome} />;
   }
 
   return (
@@ -47,7 +58,7 @@ const App: React.FC = () => {
   return (
     <Router>
       <div className="app">
-        <AppRoutes />
+        <GameRoutes />
       </div>
     </Router>
   );

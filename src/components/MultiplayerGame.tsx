@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTetris } from '../hooks/useTetris';
 import { useAnalytics } from '../contexts/AnalyticsContext';
-import { useStateTogether } from 'react-together';
+import { useMyId, useStateTogetherWithPerUserValues } from 'react-together';
 import Board from './Board';
 import GameInfo from './GameInfo';
 import NextPiecePreview from './NextPiecePreview';
@@ -16,8 +16,8 @@ interface PlayerStats {
   score: number;
   level: number;
   lines: number;
-  isGameOver?: boolean;
-  isPaused?: boolean;
+  isGameOver: boolean;
+  isPaused: boolean;
 }
 
 interface MultiplayerGameProps {
@@ -38,7 +38,8 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
   const [scoreFlash, setScoreFlash] = useState(false);
   const [prevScore, setPrevScore] = useState(0);
   const { trackEvent, events } = useAnalytics();
-  
+  const myId = useMyId();
+
   // Get the tetris game state
   const {
     gameState,
@@ -54,39 +55,31 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
     rotate,
     isPaused
   } = useTetris();
-  
-  // Get and manage player stats in shared state
-  const [players, setPlayers] = useStateTogether<PlayerStats[]>('players', []);
-  
+
+  // Get and manage player stats in shared state with per-user values
+  const [, setPlayerStats, playerStatsByUser] = useStateTogetherWithPerUserValues<Record<string, PlayerStats>>(
+    'playerStats',
+    {}
+  );
+
   // Update player stats with shared state
   useEffect(() => {
     if (!gameStarted) return;
-    
-    const updatePlayerStats = (currentPlayers: PlayerStats[] = []) => {
-      const otherPlayers = currentPlayers.filter((p: PlayerStats) => p.id !== playerName);
-      return [
-        ...otherPlayers,
-        {
-          id: playerName,
-          name: playerName,
-          score: score,
-          level: level,
-          lines: gameState.lines,
-          isGameOver: isGameOver,
-          isPaused: isPaused
-        }
-      ];
-    };
-    
-    setPlayers(updatePlayerStats);
-  }, [playerName, score, level, gameState.lines, gameStarted, setPlayers, isGameOver, isPaused]);
-  
-  // Find opponent (any player that's not the current player)
-  const opponent = React.useMemo(() => {
-    return players?.find((p: PlayerStats) => p.id !== playerName);
-  }, [players, playerName]);
+    if (!myId) return;
 
-
+    setPlayerStats(prev => ({
+      ...prev,
+      [myId]: {
+        id: myId,
+        name: playerName,
+        score: score,
+        level: level,
+        lines: gameState.lines,
+        isGameOver: isGameOver,
+        isPaused: isPaused
+      }
+    }));
+  }, [playerName, score, level, gameState.lines, gameStarted, isGameOver, isPaused, setPlayerStats, myId]);
 
   // Track game start
   useEffect(() => {
@@ -154,7 +147,7 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
           newClearedLines.push(y);
         }
       }
-      
+
       if (newClearedLines.length > 0) {
         setClearedLines(newClearedLines);
         const timer = setTimeout(() => setClearedLines([]), 800);
@@ -189,38 +182,43 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
             </span>
           </h1>
         </div>
-        
+
         <div className={styles.playerStatsHeader}>
-          <div className={styles.playerStatCard}>
-            <div className={styles.playerNameTag}>YOU</div>
-            <GameInfo 
-              score={score} 
-              level={level} 
-              lines={gameState.lines} 
-              scoreFlash={scoreFlash}
-              compact={true}
-            />
-          </div>
-          
-          {opponent && (
-            <div className={`${styles.playerStatCard} ${styles.opponentCard} ${opponent.isGameOver ? styles.gameOver : ''} ${opponent.isPaused ? styles.paused : ''}`}>
-              <div className={styles.playerNameTag}>
-                {opponent.name}
-                {opponent.isGameOver && <span className={styles.statusBadge}>GAME OVER</span>}
-                {opponent.isPaused && !opponent.isGameOver && <span className={styles.statusBadge}>PAUSED</span>}
-              </div>
-              <GameInfo 
-                score={opponent.score} 
-                level={opponent.level} 
-                lines={opponent.lines} 
-                scoreFlash={false}
-                compact={true}
-              />
-            </div>
-          )}
-          
+          {Object.entries(playerStatsByUser)
+            .sort(([aId], [bId]) => {
+              // Put current user first, then sort others by their ID
+              if (aId === myId) return -1;
+              if (bId === myId) return 1;
+              return aId.localeCompare(bId);
+            })
+            .map(([userId, users]) => {
+              const isYou = userId === myId;
+              const user = users[userId];
+              if (!user) {
+                return null;
+              }
+
+              return (
+                <div key={userId} className={`${styles.playerStatCard} ${isYou ? styles.yourCard : styles.opponentCard} ${user.isGameOver ? styles.gameOver : ''
+                  } ${user.isPaused ? styles.paused : ''}`}>
+                  <div className={`${styles.playerNameTag} ${isYou ? styles.yourNameTag : ''}`}>
+                    {isYou ? `${user.name} (YOU)` : user.name}
+                    {user.isGameOver && <span className={styles.statusBadge}>GAME OVER</span>}
+                    {user.isPaused && !user.isGameOver && <span className={styles.statusBadge}>PAUSED</span>}
+                  </div>
+                  <GameInfo
+                    score={user.score}
+                    level={user.level}
+                    lines={user.lines}
+                    scoreFlash={isYou && score > prevScore}
+                    compact={true}
+                  />
+                </div>
+              );
+            })}
+
           <div className={styles.gameControls}>
-            <button 
+            <button
               onClick={() => {
                 navigator.clipboard.writeText(roomId);
                 setCopySuccess(true);
@@ -231,7 +229,7 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
             >
               {copySuccess ? '✓ Copied!' : '📋'}
             </button>
-            <button 
+            <button
               onClick={onLeave}
               className={`${styles.headerButton} ${styles.leaveButton}`}
               title="Leave Game"
@@ -244,8 +242,8 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
 
       <div className={styles.gameContent}>
         <div className={styles.gameBoard}>
-          <Board 
-            board={renderBoard} 
+          <Board
+            board={renderBoard}
             clearedLines={clearedLines}
           />
           {isGameOver && (
@@ -260,10 +258,10 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
             </div>
           )}
         </div>
-        
+
         <div className={styles.gameSidebar}>
           <NextPiecePreview piece={gameState.nextPiece} />
-          <Controls 
+          <Controls
             onPause={togglePause}
             onNewGame={handleNewGame}
             isPaused={gameState.isPaused}

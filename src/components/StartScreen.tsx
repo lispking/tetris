@@ -9,7 +9,7 @@ interface StartScreenProps {
 
 const StartScreen: React.FC<StartScreenProps> = ({ onStart, initialRoomId = '' }) => {
   const [showMultiplayer, setShowMultiplayer] = useState(!!initialRoomId);
-  
+
   // Auto-connect to the room if initialRoomId is provided
   useEffect(() => {
     if (initialRoomId && !showMultiplayer) {
@@ -17,7 +17,7 @@ const StartScreen: React.FC<StartScreenProps> = ({ onStart, initialRoomId = '' }
       const timer = setTimeout(() => {
         setShowMultiplayer(true);
       }, 100);
-      
+
       return () => clearTimeout(timer);
     }
   }, [initialRoomId, showMultiplayer]);
@@ -25,12 +25,9 @@ const StartScreen: React.FC<StartScreenProps> = ({ onStart, initialRoomId = '' }
   if (showMultiplayer) {
     return (
       <div className={styles.multiplayerContainer}>
-        <MultiplayerLobby 
-          onBack={() => {
-            // Reset multiplayer state when going back
-            setShowMultiplayer(false);
-          }} 
+        <MultiplayerLobby
           initialRoomId={initialRoomId}
+          onBack={() => setShowMultiplayer(false)}
         />
       </div>
     );
@@ -45,8 +42,8 @@ const StartScreen: React.FC<StartScreenProps> = ({ onStart, initialRoomId = '' }
           <button onClick={onStart} className={styles.startButton}>
             Single Player
           </button>
-          <button 
-            onClick={() => setShowMultiplayer(true)} 
+          <button
+            onClick={() => setShowMultiplayer(true)}
             className={`${styles.startButton} ${styles.multiplayerButton}`}
           >
             Multiplayer

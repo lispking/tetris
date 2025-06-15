@@ -25,12 +25,12 @@ export const useTetris = () => {
   }));
   const [dropTime, setDropTime] = useState<number | null>(INITIAL_SPEED);
   const [gameStarted, setGameStarted] = useState(false);
-  
+
   // Reset the game to initial state
   const resetGame = useCallback(() => {
     const initialPiece = getRandomTetromino();
     const nextPiece = getRandomTetromino();
-    
+
     setGameState({
       ...INITIAL_GAME_STATE,
       currentPiece: initialPiece,
@@ -44,7 +44,7 @@ export const useTetris = () => {
   const startGame = useCallback(() => {
     const initialPiece = getRandomTetromino();
     const nextPiece = getRandomTetromino();
-    
+
     setGameState({
       ...INITIAL_GAME_STATE,
       currentPiece: initialPiece,
@@ -71,7 +71,7 @@ export const useTetris = () => {
       if (!currentPiece) return prev;
 
       const newPosition = { ...position };
-      
+
       switch (direction) {
         case 'left':
           newPosition.x--;
@@ -95,40 +95,41 @@ export const useTetris = () => {
         return {
           ...prev,
           position: newPosition,
-          score: direction === 'drop' ? prev.score + POINTS.HARD_DROP : prev.score,
+          // Only add hard drop points if the piece was actually moved down
+          score: (direction === 'drop' && newPosition.y > position.y) ? prev.score + POINTS.HARD_DROP : prev.score,
         };
       } else if (direction === 'down' || direction === 'drop') {
         // Piece can't move down anymore, lock it in place
         const newBoard = placePiece(prev.board, currentPiece, position);
         const { newBoard: clearedBoard, linesCleared } = clearLines(newBoard);
-        
+
         // Calculate score
         let score = prev.score;
         if (linesCleared > 0) {
           const linePoints = [0, POINTS.SINGLE, POINTS.DOUBLE, POINTS.TRIPLE, POINTS.TETRIS];
           score += linePoints[linesCleared] * prev.level;
         }
-        
+
         // Check for level up
         const newLines = prev.lines + linesCleared;
         const newLevel = Math.floor(newLines / LINES_PER_LEVEL) + 1;
-        
+
         // Get the next piece (should never be null here)
         if (!prev.nextPiece) {
           console.error('No next piece available');
           return prev;
         }
-        
+
         const newCurrentPiece = prev.nextPiece;
         const newNextPiece = getRandomTetromino();
-        
+
         // Check if game over
         const isGameOver = !canPlacePiece(
           clearedBoard,
           newCurrentPiece,
           INITIAL_POSITION
         );
-        
+
         return {
           ...prev,
           board: clearedBoard,
@@ -142,7 +143,7 @@ export const useTetris = () => {
           isGameOver,
         };
       }
-      
+
       return prev;
     });
   }, [gameState.isPaused, gameState.isGameOver, gameState.board]);
@@ -153,7 +154,7 @@ export const useTetris = () => {
 
     setGameState(prev => {
       const rotatedPiece = rotatePiece(prev.currentPiece!);
-      
+
       // Try to rotate in place first
       if (canPlacePiece(prev.board, rotatedPiece, prev.position)) {
         return {
@@ -161,7 +162,7 @@ export const useTetris = () => {
           currentPiece: rotatedPiece,
         };
       }
-      
+
       // If rotation fails, try wall kicks (1 and 2 units to the left/right)
       const kickOffsets = [
         { x: 1, y: 0 },  // 1 right
@@ -171,13 +172,13 @@ export const useTetris = () => {
         { x: 1, y: -1 }, // 1 right, 1 up
         { x: -1, y: -1 },// 1 left, 1 up
       ];
-      
+
       for (const offset of kickOffsets) {
         const newPosition = {
           x: prev.position.x + offset.x,
           y: prev.position.y + offset.y,
         };
-        
+
         if (canPlacePiece(prev.board, rotatedPiece, newPosition)) {
           return {
             ...prev,
@@ -186,13 +187,13 @@ export const useTetris = () => {
           };
         }
       }
-      
+
       // If all kicks fail, try moving down (useful for T-spins)
       const downPosition = {
         x: prev.position.x,
         y: prev.position.y + 1,
       };
-      
+
       if (canPlacePiece(prev.board, rotatedPiece, downPosition)) {
         return {
           ...prev,
@@ -200,7 +201,7 @@ export const useTetris = () => {
           position: downPosition,
         };
       }
-      
+
       return prev; // Can't rotate
     });
   }, [gameState.isPaused, gameState.isGameOver]);
@@ -212,7 +213,7 @@ export const useTetris = () => {
   // Handle keyboard controls with direct state updates
   useEffect(() => {
     if (!gameStarted) return;
-    
+
     const handleKeyDown = (e: KeyboardEvent) => {
       // Handle pause key regardless of game state
       if (e.key.toLowerCase() === 'p') {
@@ -220,20 +221,20 @@ export const useTetris = () => {
         e.preventDefault();
         return;
       }
-      
+
       // Don't process other keys if game is over or paused
       if (gameState.isGameOver || gameState.isPaused) return;
-      
+
       // Prevent default for all movement keys to avoid any browser defaults
       if (['ArrowLeft', 'ArrowRight', 'ArrowDown', 'ArrowUp', ' '].includes(e.key)) {
         e.preventDefault();
       }
-      
+
       // Skip if already processing a move
       if (isMoving.current) return;
-      
+
       isMoving.current = true;
-      
+
       switch (e.key) {
         case 'ArrowLeft':
           setGameState(prev => {
@@ -244,7 +245,7 @@ export const useTetris = () => {
               : prev;
           });
           break;
-          
+
         case 'ArrowRight':
           setGameState(prev => {
             if (!prev.currentPiece) return prev;
@@ -254,7 +255,7 @@ export const useTetris = () => {
               : prev;
           });
           break;
-          
+
         case 'ArrowDown':
           setGameState(prev => {
             if (!prev.currentPiece) return prev;
@@ -265,36 +266,25 @@ export const useTetris = () => {
             return prev;
           });
           break;
-          
+
         case 'ArrowUp':
           rotate();
           break;
-          
+
         case ' ':
-          // Hard drop
-          setGameState(prev => {
-            if (!prev.currentPiece) return prev;
-            let newY = prev.position.y;
-            while (canPlacePiece(prev.board, prev.currentPiece!, { ...prev.position, y: newY + 1 })) {
-              newY++;
-            }
-            return {
-              ...prev,
-              position: { ...prev.position, y: newY },
-              score: prev.score + POINTS.HARD_DROP,
-            };
-          });
+          // Hard drop - use the move function to ensure consistent behavior
+          move('drop');
           break;
-          
+
         // P key is now handled at the beginning of the handler
       }
-      
+
       // Reset movement lock after a short delay
       setTimeout(() => {
         isMoving.current = false;
       }, 50);
     };
-    
+
     window.addEventListener('keydown', handleKeyDown, { passive: false });
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
@@ -304,31 +294,31 @@ export const useTetris = () => {
   // Auto-drop the piece
   useEffect(() => {
     if (!gameStarted || gameState.isPaused || gameState.isGameOver) return;
-    
+
     const speed = Math.max(INITIAL_SPEED - (gameState.level - 1) * 100, 100);
     setDropTime(speed);
-    
+
     let animationFrameId: number;
     const dropPiece = (timestamp: number) => {
       if (!lastAutoDropTime.current || timestamp - lastAutoDropTime.current >= speed) {
         move('down');
         lastAutoDropTime.current = timestamp;
       }
-      
+
       if (gameStarted && !gameState.isPaused && !gameState.isGameOver) {
         animationFrameId = requestAnimationFrame(dropPiece);
       }
     };
-    
+
     animationFrameId = requestAnimationFrame(dropPiece);
-    
+
     return () => {
       if (animationFrameId) {
         cancelAnimationFrame(animationFrameId);
       }
     };
   }, [gameStarted, gameState.isPaused, gameState.isGameOver, gameState.level, move]);
-  
+
   // Handle pause state changes
   useEffect(() => {
     if (gameState.isPaused) {

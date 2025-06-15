@@ -5,11 +5,16 @@ import { ReactTogether } from 'react-together';
 import styles from './MultiplayerLobby.module.css';
 
 interface MultiplayerLobbyProps {
-    onBack: () => void;
     initialRoomId?: string;
+    onBack?: () => void;
 }
 
-const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({ onBack, initialRoomId = '' }) => {
+const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({ initialRoomId = '', onBack }) => {
+    const handleBack = useCallback(() => {
+        if (onBack) {
+            onBack();
+        }
+    }, [onBack]);
     const [roomId, setRoomId] = useState(initialRoomId);
     const [username, setUsername] = useState('');
     const [isInRoom, setIsInRoom] = useState(false);
@@ -115,12 +120,12 @@ const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({ onBack, initialRoom
         setIsInRoom(false);
         setError('');
         setIsLoading(false);
-        
+
         if (wasInRoom) {
             console.log(username, 'left room!');
-            onBack();
+            handleBack();
         }
-    }, [isInRoom, onBack, username]);
+    }, [isInRoom, handleBack, username, onBack]);
 
     if (!isInRoom) {
         return (
@@ -169,12 +174,7 @@ const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({ onBack, initialRoom
                             >
                                 {isLoading ? 'Joining...' : 'Join Room'}
                             </button>
-                            <button
-                                type="button"
-                                onClick={onBack}
-                                disabled={isLoading}
-                                className={styles.backButton}
-                            >
+                            <button className={styles.backButton} onClick={handleBack}>
                                 Back to Menu
                             </button>
                         </div>

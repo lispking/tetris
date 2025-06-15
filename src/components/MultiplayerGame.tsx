@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useTetris } from '../hooks/useTetris';
 import { useAnalytics } from '../contexts/AnalyticsContext';
 import { useMyId, useStateTogetherWithPerUserValues } from 'react-together';
@@ -7,6 +7,7 @@ import GameInfo from './GameInfo';
 import NextPiecePreview from './NextPiecePreview';
 import Controls from './Controls';
 import GameOver from './GameOver';
+import Countdown from './Countdown';
 import { placePiece } from '../utils/gameUtils';
 import styles from './Game.module.css';
 
@@ -38,8 +39,11 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
   const [scoreFlash, setScoreFlash] = useState(false);
   const [prevScore, setPrevScore] = useState(0);
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
+  const [showCountdown, setShowCountdown] = useState(true);
   const { trackEvent, events } = useAnalytics();
   const myId = useMyId();
+  const gameStartedRef = useRef(false);
+  const isPausedRef = useRef(true);
 
   // Get the tetris game state
   const {
@@ -77,7 +81,7 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
         level: level,
         lines: gameState.lines,
         isGameOver: isGameOver,
-        isPaused: isPaused
+        isPaused: isPausedRef.current || isPaused
       }
     }));
   }, [playerName, score, level, gameState.lines, gameStarted, isGameOver, isPaused, setPlayerStats, myId]);
@@ -124,8 +128,25 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
 
   // Start the game when component mounts
   useEffect(() => {
-    startGame();
-  }, [startGame]);
+    if (!gameStartedRef.current) {
+      gameStartedRef.current = true;
+      // Don't start the game immediately, wait for countdown
+      isPausedRef.current = true;
+    }
+  }, []);
+
+  const handleCountdownEnd = useCallback(() => {
+    isPausedRef.current = false;
+    if (!gameStarted) {
+      startGame();
+    } else if (isPaused) {
+      togglePause();
+    }
+  }, [gameStarted, isPaused, startGame, togglePause]);
+
+  const handleCountdownStart = useCallback(() => {
+    isPausedRef.current = true;
+  }, []);
 
   // Create a board with the current piece in its position
   const renderBoard = React.useMemo(() => {
@@ -167,6 +188,16 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
 
   return (
     <div className={`${styles.gameContainer} ${styles.multiplayer}`}>
+      {showCountdown && (
+        <Countdown
+          onCountdownStart={handleCountdownStart}
+          onCountdownEnd={() => {
+            setShowCountdown(false);
+            handleCountdownEnd();
+          }}
+          countFrom={3}
+        />
+      )}
       {/* Player Stats Header */}
       <div className={styles.gameHeader}>
         <div className={styles.gameTitle}>

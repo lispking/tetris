@@ -25,40 +25,18 @@ const MultiplayerRoom: React.FC<MultiplayerRoomProps> = ({
 }) => {
     const [players, setPlayers] = useStateTogether<Player[]>('players', []);
     const [isReady, setIsReady] = useStateTogether<boolean>(`${playerName}-ready`, false);
-    const [gameStatus, setGameStatus] = useStateTogether<'waiting' | 'starting' | 'started'>('gameStatus', 'waiting');
+    const [gameStatus, setGameStatus] = useStateTogether<'waiting' | 'started'>('gameStatus', 'waiting');
     const isHost = players.length === 0; // First player is host
     const [error, setError] = useState('');
     const [copySuccess, setCopySuccess] = useState(false);
-    const [localGameStarting, setLocalGameStarting] = useState(false);
-    const [countdown, setCountdown] = useState<number | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
     const leaveSession = useLeaveSession();
 
-    // Handle game start countdown
+    // Start the game when all players are ready
     useEffect(() => {
-        if (gameStatus !== 'starting') return;
-
-        // Start countdown from 3
-        let remaining = 3;
-        setCountdown(remaining);
-
-        const interval = setInterval(() => {
-            remaining--;
-            if (remaining >= 0) {
-                setCountdown(remaining);
-            }
-            
-            if (remaining < 0) {
-                clearInterval(interval);
-                console.log(playerName, 'Starting game after countdown');
-                setGameStatus('started');
-                setLocalGameStarting(false);
-                setCountdown(null);
-            }
-        }, 1000);
-
-        return () => {
-            clearInterval(interval);
-        };
+        if (gameStatus === 'started') {
+            console.log(playerName, 'Game started');
+        }
     }, [gameStatus, playerName]);
 
     const copyRoomUrl = () => {
@@ -183,24 +161,19 @@ const MultiplayerRoom: React.FC<MultiplayerRoomProps> = ({
 
         const allReady = players.length >= 2 && players.every(p => p.isReady);
         if (allReady) {
-            console.log('All players are ready, preparing to start the game...');
-
-            // Set local loading state for immediate UI feedback
-            setLocalGameStarting(true);
-
-            // Update shared game status to 'starting' and then to 'started' after delay
-            await setGameStatus('starting');
-            console.log(playerName, 'Game status set to: starting');
-
-            // Wait for all players to receive the 'starting' state
-            await new Promise(resolve => setTimeout(resolve, 1500));
-
-            // Then update to 'started' to begin the game
-            await setGameStatus('started');
-            console.log(playerName, 'Game status set to: started');
-
-            // Clear local loading state in case it's still active
-            setLocalGameStarting(false);
+            console.log('All players are ready, starting the game...');
+            setIsLoading(true);
+            
+            try {
+                // Update game status to started
+                await setGameStatus('started');
+                console.log(playerName, 'Game started');
+            } catch (err) {
+                console.error('Failed to start game:', err);
+                setError('Failed to start the game. Please try again.');
+            } finally {
+                setIsLoading(false);
+            }
         } else {
             const errorMsg = players.length < 2 ?
                 'At least 2 players are needed to start' :
@@ -221,20 +194,13 @@ const MultiplayerRoom: React.FC<MultiplayerRoomProps> = ({
         onLeave();
     }, [leaveSession, onLeave]);
 
-    // Show game starting message
-    if (localGameStarting || gameStatus === 'starting') {
-        console.log(playerName, 'Game is starting... current status:', { localGameStarting, gameStatus });
-
+    // Show loading state
+    if (isLoading) {
         return (
             <div className={styles.roomContainer}>
                 <div className={styles.gameStarting}>
-                    <h3>Game is starting in...</h3>
-                    {countdown !== null && (
-                        <div className={styles.countdown}>
-                            {countdown}
-                        </div>
-                    )}
-                    <p>Get ready to play!</p>
+                    <h3>Starting Game...</h3>
+                    <p>Preparing the game. Please wait.</p>
                 </div>
             </div>
         );

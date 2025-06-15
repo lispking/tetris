@@ -44,7 +44,7 @@ const MultiplayerRoom: React.FC<MultiplayerRoomProps> = ({
             // Update countdown every second
             const interval = setInterval(() => {
                 setCountdown(prev => {
-                    if (prev === null || prev <= 1) {
+                    if (prev === null || prev <= 0) {
                         clearInterval(interval);
                         return null;
                     }
@@ -60,7 +60,7 @@ const MultiplayerRoom: React.FC<MultiplayerRoomProps> = ({
                 setGameStatus('started');
                 setLocalGameStarting(false);
                 setCountdown(null);
-            }, 3000); // 3 second countdown
+            }, 4000); // 4 second countdown to show all numbers (3, 2, 1, GO!)
 
             setStartTimeout(timer);
 
@@ -97,12 +97,13 @@ const MultiplayerRoom: React.FC<MultiplayerRoomProps> = ({
 
     // Initialize player in the room
     useEffect(() => {
-        if (!playerName) return;
+        if (!playerName || !roomId) return;
 
-        console.log('Player joining room:', playerName);
+        console.log(`[${playerName}] Initializing player in room:`, roomId);
         let isMounted = true;
+        let retryCount = 0;
+        const maxRetries = 3;
 
-        // Add current player to the players list
         const addPlayer = () => {
             if (!isMounted) return;
 
@@ -113,20 +114,28 @@ const MultiplayerRoom: React.FC<MultiplayerRoomProps> = ({
                 const playerExists = currentPlayers.some(p => p.id === playerName);
 
                 if (!playerExists) {
-                    console.log('Adding new player:', playerName);
+                    console.log(`[${playerName}] Adding new player to room ${roomId}`);
                     return [...currentPlayers, {
                         id: playerName,
                         name: playerName,
                         isReady: false
                     }];
+                } else if (retryCount < maxRetries) {
+                    // Retry adding player if not added yet
+                    retryCount++;
+                    console.log(`[${playerName}] Player exists, retry ${retryCount}/${maxRetries}`);
+                    setTimeout(addPlayer, 500);
                 }
 
                 return currentPlayers;
             });
         };
 
-        // Small delay to ensure session is ready
-        const timer = setTimeout(addPlayer, 100);
+        // Initial add player with retry mechanism
+        const timer = setTimeout(() => {
+            console.log(`[${playerName}] Starting player initialization`);
+            addPlayer();
+        }, 300); // Slightly longer initial delay
 
         // Cleanup on unmount
         return () => {
@@ -134,14 +143,16 @@ const MultiplayerRoom: React.FC<MultiplayerRoomProps> = ({
             clearTimeout(timer);
 
             if (playerName) {
-                console.log('Player leaving room:', playerName);
+                console.log(`[${playerName}] Cleaning up player from room ${roomId}`);
                 setPlayers(prevPlayers => {
                     if (!Array.isArray(prevPlayers)) return [];
-                    return prevPlayers.filter(p => p.id !== playerName);
+                    const updatedPlayers = prevPlayers.filter(p => p.id !== playerName);
+                    console.log(`[${playerName}] Remaining players:`, updatedPlayers.length);
+                    return updatedPlayers;
                 });
             }
         };
-    }, [playerName, setPlayers]);
+    }, [playerName, roomId, setPlayers]);
 
     // Sync ready state with the shared players list
     useEffect(() => {

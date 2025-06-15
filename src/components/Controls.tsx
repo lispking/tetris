@@ -59,6 +59,17 @@ const Controls: React.FC<ControlsProps> = ({
 
   return (
     <div className={styles.controls}>
+      {/* Keyboard hints */}
+      <div className={styles.keyboardHints}>
+        <div className={styles.hintItem}>
+          <span className={styles.key}>P</span>
+          <span>{isPaused ? 'Resume' : 'Pause'}</span>
+        </div>
+        <div className={styles.hintItem}>
+          <span className={styles.key}>Space</span>
+          <span>Hard Drop</span>
+        </div>
+      </div>
       <div className={styles.controller}>
         {/* Left side - D-pad */}
         <div className={styles.dPadContainer}>
@@ -98,28 +109,6 @@ const Controls: React.FC<ControlsProps> = ({
         {/* Right side - Action buttons */}
         <div className={styles.actionButtons}>
           <div className={styles.actionRow}>
-            {onHardDrop && (
-              <button 
-                className={`${styles.controlButton} ${styles.actionButton} ${styles.actionA}`}
-                onTouchStart={(e) => handleTouchStart(e, onHardDrop)}
-                onMouseDown={onHardDrop}
-                aria-label="Hard Drop"
-              >
-                <span className={styles.buttonIcon}>A</span>
-              </button>
-            )}
-            {onRotate && (
-              <button 
-                className={`${styles.controlButton} ${styles.actionButton} ${styles.actionB}`}
-                onTouchStart={(e) => handleTouchStart(e, onRotate)}
-                onMouseDown={onRotate}
-                aria-label="Rotate"
-              >
-                <span className={styles.buttonIcon}>B</span>
-              </button>
-            )}
-          </div>
-          <div className={styles.actionRow}>
             {onPause && (
               <button 
                 onClick={onPause} 
@@ -136,7 +125,7 @@ const Controls: React.FC<ControlsProps> = ({
                   className={`${styles.controlButton} ${styles.actionButton} ${styles.actionSelect}`}
                   aria-label="New Game"
                 >
-                  <span className={styles.buttonIcon}>NEW GAME</span>
+                  <span className={styles.buttonIcon}>SELECT</span>
                 </button>
                 {showConfirmDialog && (
                   <div className={styles.confirmDialogOverlay}>
@@ -162,18 +151,28 @@ const Controls: React.FC<ControlsProps> = ({
               </>
             )}
           </div>
-        </div>
-      </div>
-      
-      {/* Keyboard hints */}
-      <div className={styles.keyboardHints}>
-        <div className={styles.hintItem}>
-          <span className={styles.key}>P</span>
-          <span>{isPaused ? 'Resume' : 'Pause'}</span>
-        </div>
-        <div className={styles.hintItem}>
-          <span className={styles.key}>Space</span>
-          <span>Hard Drop</span>
+          <div className={styles.actionRow}>
+            {onHardDrop && (
+              <button 
+                className={`${styles.controlButton} ${styles.actionButton} ${styles.actionA}`}
+                onTouchStart={(e) => handleTouchStart(e, onHardDrop)}
+                onMouseDown={onHardDrop}
+                aria-label="Hard Drop"
+              >
+                <span className={styles.buttonIcon}>A</span>
+              </button>
+            )}
+            {onRotate && (
+              <button 
+                className={`${styles.controlButton} ${styles.actionButton} ${styles.actionB}`}
+                onTouchStart={(e) => handleTouchStart(e, onRotate)}
+                onMouseDown={onRotate}
+                aria-label="Rotate"
+              >
+                <span className={styles.buttonIcon}>B</span>
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>

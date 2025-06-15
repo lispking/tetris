@@ -57,17 +57,20 @@ const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({ initialRoomId = '',
             return;
         }
 
-        if (effectiveRoomId !== roomId) {
-            setRoomId(effectiveRoomId);
-        }
+        // Always update the room ID to ensure consistency
+        setRoomId(effectiveRoomId);
 
-        const roomSessionId = `room-${effectiveRoomId}`;
+        // Create a consistent session ID for this room
+        const roomSessionId = `tetris-room-${effectiveRoomId.toLowerCase()}`;
+        
+        console.log(`[${targetUsername}] Entering room ${effectiveRoomId} with session ${roomSessionId}`);
+        
+        // Update session and UI state
         setSessionId(roomSessionId);
         setIsInRoom(true);
         setError('');
         setIsLoading(false);
         setPlayerName(targetUsername);
-        console.log(`[${targetUsername}] Entering room ${effectiveRoomId}`);
     }, [roomId]);
 
     const handleJoinRoom = async (e?: React.FormEvent) => {
@@ -104,15 +107,18 @@ const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({ initialRoomId = '',
         setIsLoading(true);
         setError('');
 
+        // Generate a new room ID and ensure it's in uppercase for consistency
         const newRoomId = Math.random().toString(36).substring(2, 8).toUpperCase();
-        const newSessionId = `room-${newRoomId}`;
+        const newSessionId = `tetris-room-${newRoomId.toLowerCase()}`;
 
+        console.log(`Creating new room: ${newRoomId} with session ${newSessionId}`);
+        
+        // Update both room ID and session ID together
         setRoomId(newRoomId);
         setSessionId(newSessionId);
         setIsInRoom(true);
         setIsLoading(false);
         setPlayerName(username);
-        console.log(`Room created: ${newRoomId}`);
     }, [username]);
 
     const handleLeaveRoom = useCallback(() => {

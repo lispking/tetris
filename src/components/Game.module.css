@@ -63,6 +63,70 @@
   background: rgba(0, 0, 0, 0.3);
   border-radius: 8px;
   padding: 10px;
+  position: relative;
+}
+
+.confirmDialog {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.confirmContent {
+  background: #2a2a3a;
+  padding: 20px;
+  border-radius: 8px;
+  max-width: 300px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.confirmContent p {
+  margin-bottom: 20px;
+  color: #fff;
+  font-size: 16px;
+}
+
+.confirmButtons {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.confirmButton,
+.cancelButton {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.confirmButton {
+  background-color: #ff4d4d;
+  color: white;
+}
+
+.confirmButton:hover {
+  background-color: #ff3333;
+}
+
+.cancelButton {
+  background-color: #4a4a5a;
+  color: white;
+}
+
+.cancelButton:hover {
+  background-color: #5a5a6a;
 }
 
 .playerStatCard {

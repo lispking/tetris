@@ -37,6 +37,7 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
   const [clearedLines, setClearedLines] = useState<number[]>([]);
   const [scoreFlash, setScoreFlash] = useState(false);
   const [prevScore, setPrevScore] = useState(0);
+  const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
   const { trackEvent, events } = useAnalytics();
   const myId = useMyId();
 
@@ -230,12 +231,39 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
               {copySuccess ? '✓ Copied!' : '📋'}
             </button>
             <button
-              onClick={onLeave}
+              onClick={() => setShowLeaveConfirm(true)}
               className={`${styles.headerButton} ${styles.leaveButton}`}
               title="Leave Game"
             >
-              🚪 Leave
+              Leave
             </button>
+            {showLeaveConfirm && (
+              <div className={styles.confirmDialogOverlay}>
+                <div className={styles.confirmContent}>
+                  <p>Leave game?<br/>Current progress will be lost.</p>
+                  <div className={styles.confirmButtons}>
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onLeave();
+                      }}
+                      className={styles.confirmButton}
+                    >
+                      Leave
+                    </button>
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowLeaveConfirm(false);
+                      }}
+                      className={styles.cancelButton}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

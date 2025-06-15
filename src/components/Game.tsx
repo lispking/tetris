@@ -7,6 +7,7 @@ import NextPiecePreview from './NextPiecePreview';
 import Controls from './Controls';
 import GameOver from './GameOver';
 import StartScreen from './StartScreen';
+import ConfirmationDialog from './ConfirmationDialog';
 import { placePiece } from '../utils/gameUtils';
 import styles from './Game.module.css';
 
@@ -199,100 +200,87 @@ const Game: React.FC<GameProps> = ({ onGoHome }) => {
   }, [gameState.isPaused, togglePause]);
 
   return (
-    <>
-      {showConfirmDialog && (
-        <div className={styles.confirmDialogOverlay}>
-          <div className={styles.confirmDialog}>
-            <p>Return to home?<br/>Current progress will be lost.</p>
-            <div className={styles.dialogButtons}>
-              <button 
-                onClick={handleConfirmGoHome}
-                className={`${styles.dialogButton} ${styles.confirmButton}`}
+    <div className={styles.gameContainer}>
+      {!gameStarted ? (
+        <StartScreen
+          onStart={handleStartGame}
+        />
+      ) : (
+        <>
+          <ConfirmationDialog
+            isOpen={showConfirmDialog}
+            title="Leave Game"
+            message={<span>Return to home? <br/>Current progress will be lost.</span>}
+            confirmText="Leave"
+            cancelText="Cancel"
+            onConfirm={handleConfirmGoHome}
+            onCancel={handleCancelGoHome}
+            confirmButtonVariant="danger"
+          />
+          <div className={styles.gameHeader}>
+            <h1 className={`${styles.titleWrapper} ${scoreFlash ? styles.scoreFlash : ''}`}>
+              <span className={styles.tetrisIcon} aria-hidden="true">
+                <span className={styles.tetrisBlock}></span>
+                <span className={styles.tetrisBlock}></span>
+                <span className={styles.tetrisBlock}></span>
+                <span className={styles.tetrisBlock}></span>
+              </span>
+              <span className={styles.titleText}>
+                <span className={styles.titleGlow}>TETRIS</span>
+                <span className={styles.titleShadow} aria-hidden="true">TETRIS</span>
+              </span>
+              <button
+                onClick={handleGoHomeClick}
+                className={styles.homeButton}
+                aria-label="Back to Home"
+                title="Back to Home"
               >
-                Home
+                🏠
               </button>
-              <button 
-                onClick={handleCancelGoHome}
-                className={`${styles.dialogButton} ${styles.cancelButton}`}
-              >
-                Cancel
-              </button>
+            </h1>
+          </div>
+          <div className={styles.gameContent}>
+            <div className={styles.gameBoard}>
+              <Board
+                board={renderBoard}
+                clearedLines={clearedLines}
+              />
+              {isGameOver && (
+                <GameOver score={score} onNewGame={handleNewGameClick} />
+              )}
+              {gameState.isPaused && (
+                <div className={styles.pausedOverlay}>
+                  <div className={styles.pausedText}>
+                    <span>PAUSED</span>
+                    <div className={styles.pausedHint}>Press P to continue</div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className={styles.gameSidebar}>
+              <GameInfo
+                score={score}
+                level={level}
+                lines={gameState.lines}
+                scoreFlash={scoreFlash}
+              />
+              <NextPiecePreview piece={gameState.nextPiece} />
+              <Controls
+                onPause={togglePause}
+                onNewGame={handleNewGameClick}
+                isPaused={gameState.isPaused}
+                onMoveLeft={() => move('left')}
+                onMoveRight={() => move('right')}
+                onRotate={rotate}
+                onHardDrop={() => move('drop')}
+                onSoftDrop={() => move('down')}
+              />
             </div>
           </div>
-        </div>
+        </>
       )}
-      <div className={styles.gameContainer}>
-        {!gameStarted ? (
-          <StartScreen
-            onStart={handleStartGame}
-          />
-        ) : (
-          <>
-            <div className={styles.gameHeader}>
-              <h1 className={`${styles.titleWrapper} ${scoreFlash ? styles.scoreFlash : ''}`}>
-                <span className={styles.tetrisIcon} aria-hidden="true">
-                  <span className={styles.tetrisBlock}></span>
-                  <span className={styles.tetrisBlock}></span>
-                  <span className={styles.tetrisBlock}></span>
-                  <span className={styles.tetrisBlock}></span>
-                </span>
-                <span className={styles.titleText}>
-                  <span className={styles.titleGlow}>TETRIS</span>
-                  <span className={styles.titleShadow} aria-hidden="true">TETRIS</span>
-                </span>
-                <button 
-                  onClick={handleGoHomeClick}
-                  className={styles.homeButton}
-                  aria-label="Back to Home"
-                  title="Back to Home"
-                >
-                  🏠
-                </button>
-              </h1>
-            </div>
-            <div className={styles.gameContent}>
-              <div className={styles.gameBoard}>
-                <Board
-                  board={renderBoard}
-                  clearedLines={clearedLines}
-                />
-                {isGameOver && (
-                  <GameOver score={score} onNewGame={handleNewGameClick} />
-                )}
-                {gameState.isPaused && (
-                  <div className={styles.pausedOverlay}>
-                    <div className={styles.pausedText}>
-                      <span>PAUSED</span>
-                      <div className={styles.pausedHint}>Press P to continue</div>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <div className={styles.gameSidebar}>
-                <GameInfo
-                  score={score}
-                  level={level}
-                  lines={gameState.lines}
-                  scoreFlash={scoreFlash}
-                />
-                <NextPiecePreview piece={gameState.nextPiece} />
-                <Controls
-                  onPause={togglePause}
-                  onNewGame={handleNewGameClick}
-                  isPaused={gameState.isPaused}
-                  onMoveLeft={() => move('left')}
-                  onMoveRight={() => move('right')}
-                  onRotate={rotate}
-                  onHardDrop={() => move('drop')}
-                  onSoftDrop={() => move('down')}
-                />
-              </div>
-            </div>
-          </>
-        )}
-      </div>
-    </>
+    </div>
   );
 };
 

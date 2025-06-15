@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { getPlayerName, setPlayerName } from '../utils/storage';
-import MultiplayerRoom from './MultiplayerRoom';
-import { ReactTogether } from 'react-together';
+import MultiplayerSession from './MultiplayerSession';
 import styles from './MultiplayerLobby.module.css';
 
 interface MultiplayerLobbyProps {
@@ -18,7 +17,6 @@ const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({ initialRoomId = '',
     const [roomId, setRoomId] = useState(initialRoomId);
     const [username, setUsername] = useState('');
     const [isInRoom, setIsInRoom] = useState(false);
-    const [sessionId, setSessionId] = useState('');
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
@@ -60,13 +58,9 @@ const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({ initialRoomId = '',
         // Always update the room ID to ensure consistency
         setRoomId(effectiveRoomId);
 
-        // Create a consistent session ID for this room
-        const roomSessionId = `tetris-room-${effectiveRoomId.toLowerCase()}`;
+        console.log(`[${targetUsername}] Entering room ${effectiveRoomId}`);
         
-        console.log(`[${targetUsername}] Entering room ${effectiveRoomId} with session ${roomSessionId}`);
-        
-        // Update session and UI state
-        setSessionId(roomSessionId);
+        // Update UI state
         setIsInRoom(true);
         setError('');
         setIsLoading(false);
@@ -107,15 +101,13 @@ const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({ initialRoomId = '',
         setIsLoading(true);
         setError('');
 
-        // Generate a new room ID and ensure it's in uppercase for consistency
-        const newRoomId = Math.random().toString(36).substring(2, 8).toUpperCase();
-        const newSessionId = `tetris-room-${newRoomId.toLowerCase()}`;
+        // Generate a new room ID
+        const newRoomId = Math.random().toString(36).substring(2, 8);
 
-        console.log(`Creating new room: ${newRoomId} with session ${newSessionId}`);
+        console.log(`[${username}] Creating new room: ${newRoomId}`);
         
-        // Update both room ID and session ID together
+        // Update room state
         setRoomId(newRoomId);
-        setSessionId(newSessionId);
         setIsInRoom(true);
         setIsLoading(false);
         setPlayerName(username);
@@ -128,7 +120,7 @@ const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({ initialRoomId = '',
         setIsLoading(false);
 
         if (wasInRoom) {
-            console.log(username, 'left room!');
+            console.log(`[${username}] left room!`);
             handleBack();
         }
     }, [isInRoom, handleBack, username, onBack]);
@@ -192,21 +184,11 @@ const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({ initialRoomId = '',
 
     return (
         <div className={styles.roomWrapper}>
-            <ReactTogether
-                key={sessionId}
-                sessionParams={{
-                    appId: import.meta.env.VITE_APP_ID,
-                    apiKey: import.meta.env.VITE_API_KEY,
-                    name: `tetris-${roomId}`,
-                    password: 'TetrisGame1234',
-                }}
-            >
-                <MultiplayerRoom
-                    roomId={roomId}
-                    playerName={username}
-                    onLeave={handleLeaveRoom}
-                />
-            </ReactTogether>
+            <MultiplayerSession
+                roomId={roomId}
+                playerName={username}
+                onLeave={handleLeaveRoom}
+            />
         </div>
     );
 };

@@ -35,40 +35,32 @@ const MultiplayerRoom: React.FC<MultiplayerRoomProps> = ({
     const [countdownInterval, setCountdownInterval] = useState<NodeJS.Timeout | null>(null);
     const leaveSession = useLeaveSession();
 
-    // Handle game start countdown and timeout
+    // Handle game start countdown
     useEffect(() => {
-        if (gameStatus === 'starting') {
-            // Start countdown from 3
-            setCountdown(3);
+        if (gameStatus !== 'starting') return;
 
-            // Update countdown every second
-            const interval = setInterval(() => {
-                setCountdown(prev => {
-                    if (prev === null || prev <= 0) {
-                        clearInterval(interval);
-                        return null;
-                    }
-                    return prev - 1;
-                });
-            }, 1000);
+        // Start countdown from 3
+        let remaining = 3;
+        setCountdown(remaining);
 
-            setCountdownInterval(interval);
-
-            // Set timeout to start the game after countdown
-            const timer = setTimeout(() => {
+        const interval = setInterval(() => {
+            remaining--;
+            if (remaining >= 0) {
+                setCountdown(remaining);
+            }
+            
+            if (remaining < 0) {
+                clearInterval(interval);
                 console.log(playerName, 'Starting game after countdown');
                 setGameStatus('started');
                 setLocalGameStarting(false);
                 setCountdown(null);
-            }, 4000); // 4 second countdown to show all numbers (3, 2, 1, GO!)
+            }
+        }, 1000);
 
-            setStartTimeout(timer);
-
-            return () => {
-                if (interval) clearInterval(interval);
-                if (timer) clearTimeout(timer);
-            };
-        }
+        return () => {
+            clearInterval(interval);
+        };
     }, [gameStatus, playerName]);
 
     // Cleanup timeouts and intervals on unmount

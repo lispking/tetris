@@ -31,8 +31,6 @@ const MultiplayerRoom: React.FC<MultiplayerRoomProps> = ({
     const [copySuccess, setCopySuccess] = useState(false);
     const [localGameStarting, setLocalGameStarting] = useState(false);
     const [countdown, setCountdown] = useState<number | null>(null);
-    const [startTimeout, setStartTimeout] = useState<NodeJS.Timeout | null>(null);
-    const [countdownInterval, setCountdownInterval] = useState<NodeJS.Timeout | null>(null);
     const leaveSession = useLeaveSession();
 
     // Handle game start countdown
@@ -62,14 +60,6 @@ const MultiplayerRoom: React.FC<MultiplayerRoomProps> = ({
             clearInterval(interval);
         };
     }, [gameStatus, playerName]);
-
-    // Cleanup timeouts and intervals on unmount
-    useEffect(() => {
-        return () => {
-            if (startTimeout) clearTimeout(startTimeout);
-            if (countdownInterval) clearInterval(countdownInterval);
-        };
-    }, [startTimeout, countdownInterval]);
 
     const copyRoomUrl = () => {
         const url = `${window.location.origin}/multiplayer?room=${encodeURIComponent(roomId)}`;

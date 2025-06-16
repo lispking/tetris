@@ -240,24 +240,6 @@ const Game: React.FC<GameProps> = ({ onGoHome }) => {
             </h1>
           </div>
           <div className={styles.gameContent}>
-            <div className={styles.gameBoard}>
-              <Board
-                board={renderBoard}
-                clearedLines={clearedLines}
-              />
-              {isGameOver && (
-                <GameOver score={score} level={level} lines={gameState.lines} onNewGame={handleNewGameClick} />
-              )}
-              {gameState.isPaused && (
-                <div className={styles.pausedOverlay}>
-                  <div className={styles.pausedText}>
-                    <span>PAUSED</span>
-                    <div className={styles.pausedHint}>Press P to continue</div>
-                  </div>
-                </div>
-              )}
-            </div>
-
             <div className={styles.gameSidebar}>
               <GameInfo
                 score={score}
@@ -276,6 +258,24 @@ const Game: React.FC<GameProps> = ({ onGoHome }) => {
                 onHardDrop={() => move('drop')}
                 onSoftDrop={() => move('down')}
               />
+            </div>
+
+            <div className={styles.gameBoard}>
+              <Board
+                board={renderBoard}
+                clearedLines={clearedLines}
+              />
+              {isGameOver && (
+                <GameOver score={score} level={level} lines={gameState.lines} onNewGame={handleNewGameClick} />
+              )}
+              {gameState.isPaused && (
+                <div className={styles.pausedOverlay}>
+                  <div className={styles.pausedText}>
+                    <span>PAUSED</span>
+                    <div className={styles.pausedHint}>Press P to continue</div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </>

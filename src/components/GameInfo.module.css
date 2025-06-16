@@ -56,6 +56,53 @@
   transform: scale(1.1);
 }
 
+/* Timer specific styles */
+.gameInfo .infoItem.paused {
+  position: relative;
+  opacity: 0.7;
+}
+
+.gameInfo .infoItem.paused::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.3);
+  z-index: 1;
+  border-radius: 4px;
+}
+
+.gameInfo .infoItem.paused .infoValue {
+  color: #ffc107;
+}
+
+.gameInfo .pauseIndicator {
+  margin-left: 4px;
+  display: inline-flex;
+  align-items: center;
+  color: rgba(255, 255, 255, 0.7);
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.7; }
+  50% { opacity: 1; }
+  100% { opacity: 0.7; }
+}
+
+/* Warning state when time is running low */
+.gameInfo .infoItem.warning {
+  animation: warningPulse 1s infinite;
+}
+
+@keyframes warningPulse {
+  0% { background-color: rgba(255, 87, 34, 0.1); }
+  50% { background-color: rgba(255, 87, 34, 0.3); }
+  100% { background-color: rgba(255, 87, 34, 0.1); }
+}
+
 /* Player stat card specific styles */
 .playerStatCard .gameInfo.compact {
   background: rgba(0, 0, 0, 0.3);
@@ -69,14 +116,8 @@
 
 .infoRow {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: 8px;
-  padding: 0 10px;
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  flex-direction: column;
+  gap: 12px;
 }
 
 .infoItem {
@@ -85,6 +126,8 @@
   padding: 12px 5px;
   position: relative;
   transition: all 0.3s ease;
+  border-radius: 4px;
+  border: 1px solid transparent;
 }
 
 .infoItem:hover {

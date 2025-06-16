@@ -263,6 +263,66 @@
   opacity: 0.9;
 }
 
+.durationSetting {
+  background: rgba(0, 0, 0, 0.2);
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.durationSetting label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #fff;
+  font-size: 0.9rem;
+  text-align: left;
+}
+
+.durationSetting .ant-slider {
+  margin: 10px 0;
+}
+
+.durationSetting .ant-slider-track {
+  background-color: #4CAF50;
+}
+
+.durationSetting .ant-slider-handle {
+  border-color: #4CAF50;
+}
+
+.durationSetting .ant-slider-handle:focus,
+.durationSetting .ant-slider-handle:hover {
+  border-color: #4CAF50;
+  box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.2);
+}
+
+.durationSetting .ant-input-number {
+  width: 90px !important;
+  margin-left: 10px;
+}
+
+.durationSetting .ant-input-number-input {
+  text-align: center;
+  color: #fff;
+}
+
+.durationSetting .ant-input-number-handler-wrap {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.durationSetting .ant-input-number-handler-up-inner,
+.durationSetting .ant-input-number-handler-down-inner {
+  color: #fff;
+}
+
+.durationSetting .time-hint {
+  margin-top: 8px;
+  font-size: 0.8rem;
+  color: #aaa;
+  text-align: left;
+}
+
 /* Responsive adjustments */
 @media (max-width: 480px) {
   .countdown {

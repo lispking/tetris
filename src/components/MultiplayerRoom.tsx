@@ -1,5 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useLeaveSession, useStateTogether } from 'react-together';
+import { Slider, InputNumber } from 'antd';
+import 'antd/dist/reset.css';
 import styles from './MultiplayerRoom.module.css';
 import MultiplayerGame from './MultiplayerGame';
 
@@ -26,7 +28,26 @@ const MultiplayerRoom: React.FC<MultiplayerRoomProps> = ({
     const [players, setPlayers] = useStateTogether<Player[]>('players', []);
     const [isReady, setIsReady] = useStateTogether<boolean>(`${playerName}-ready`, false);
     const [gameStatus, setGameStatus] = useStateTogether<'waiting' | 'started'>('gameStatus', 'waiting');
-    const isHost = players.length === 0; // First player is host
+    // Use a ref to track if we've initialized the game duration to prevent overwriting
+    const initializedRef = useRef(false);
+    const [gameDuration, setGameDuration] = useStateTogether<number>('gameDuration', 60); // Default 1 minute
+    const [localGameDuration, setLocalGameDuration] = useState(60);
+    
+    // Sync local state with shared state
+    useEffect(() => {
+      setLocalGameDuration(gameDuration);
+      initializedRef.current = true;
+    }, [gameDuration]);
+    
+    // Check if current player is the host (first player in the players array)
+    const isHost = players.length > 0 && players[0].name === playerName;
+    
+    // Update local duration when it changes from other players
+    useEffect(() => {
+      if (!isHost) {
+        setLocalGameDuration(gameDuration);
+      }
+    }, [gameDuration, isHost]);
     const [error, setError] = useState('');
     const [copySuccess, setCopySuccess] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -214,6 +235,7 @@ const MultiplayerRoom: React.FC<MultiplayerRoomProps> = ({
                 isHost={isHost}
                 playerName={playerName}
                 onLeave={handleLeaveRoom}
+                gameDuration={gameDuration}
             />
         );
     }
@@ -249,6 +271,73 @@ const MultiplayerRoom: React.FC<MultiplayerRoomProps> = ({
             </div>
 
             <div className={styles.roomActions}>
+                <div className={styles.durationSetting}>
+                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
+                        Game Duration: {Math.floor(localGameDuration / 60)} min {localGameDuration % 60 ? `${localGameDuration % 60} sec` : ''}
+                    </label>
+                    {isHost ? (
+                        <>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                                <Slider
+                                    min={30}
+                                    max={300}
+                                    step={30}
+                                    value={localGameDuration}
+                                    onChange={(value) => {
+                                        const newValue = value as number;
+                                        setLocalGameDuration(newValue);
+                                        setGameDuration(newValue);
+                                    }}
+                                    style={{ flex: 1, maxWidth: '300px' }}
+                                    tooltip={{ 
+                                        formatter: (value) => `${Math.floor(value! / 60)}:${(value! % 60).toString().padStart(2, '0')}`,
+                                        color: '#4CAF50'
+                                    }}
+                                />
+                                <InputNumber
+                                    min={30}
+                                    max={300}
+                                    step={30}
+                                    value={localGameDuration}
+                                    onChange={(value) => {
+                                        if (value) {
+                                            const newValue = typeof value === 'number' ? value : parseInt(value);
+                                            setLocalGameDuration(newValue);
+                                            setGameDuration(newValue);
+                                        }
+                                    }}
+                                    style={{ width: '100px' }}
+                                    formatter={(value) => `${Math.floor(Number(value) / 60)}:${(Number(value) % 60).toString().padStart(2, '0')}`}
+                                    parser={(value) => {
+                                        if (!value) return 60;
+                                        const [minutes, seconds = '0'] = value.split(':');
+                                        return (parseInt(minutes) * 60) + (parseInt(seconds) || 0);
+                                    }}
+                                />
+                            </div>
+                            <div style={{ marginTop: '4px', fontSize: '0.8em', color: '#666' }}>
+                                Adjust the slider or enter time in MM:SS format
+                            </div>
+                        </>
+                    ) : (
+                        <div style={{
+                            padding: '12px',
+                            backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                            borderRadius: '6px',
+                            color: '#fff',
+                            textAlign: 'center',
+                            fontSize: '1.1em',
+                            fontWeight: 'bold',
+                            fontFamily: 'monospace',
+                            letterSpacing: '1px'
+                        }}>
+                            {`${Math.floor(localGameDuration / 60)}:${(localGameDuration % 60).toString().padStart(2, '0')}`}
+                            <div style={{ fontSize: '0.8em', color: '#aaa', marginTop: '4px' }}>
+                                Game duration set by host
+                            </div>
+                        </div>
+                    )}
+                </div>
                 <button
                     onClick={toggleReady}
                     className={`${styles.readyButton} ${isReady ? styles.ready : ''}`}

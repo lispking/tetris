@@ -293,37 +293,44 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
 
         {/* Right Sidebar - Player Stats */}
         <div className={styles.sidebar}>
-          <div className={styles.sectionHeader}>
-            <h2 className={styles.sectionTitle}>PLAYERS</h2>
-            <div className={styles.gameControls}>
+          <div className={styles.statsHeader}>
+            <div className={styles.roomIdContainer}>
               <button
                 onClick={() => {
                   navigator.clipboard.writeText(roomId);
                   setCopySuccess(true);
                   setTimeout(() => setCopySuccess(false), 2000);
                 }}
-                className={styles.headerButton}
+                className={styles.roomIdButton}
                 title="Copy Room ID"
               >
-                {copySuccess ? '✓ Copied!' : '📋 Room ID'}
+                {copySuccess ? '✓ Copied!' : '📋 Room ID'}: {roomId}
               </button>
             </div>
+            <div className={styles.playerCount}>
+              Players: {Object.keys(playerStatsByUser).length}
+            </div>
           </div>
-          
           <div className={styles.playerStatsHeader}>
             {Object.entries(playerStatsByUser)
-              .sort(([aId], [bId]) => {
-                if (aId === myId) return -1;
-                if (bId === myId) return 1;
-                return aId.localeCompare(bId);
+              // Sort by score in descending order
+              .sort(([, a], [, b]) => {
+                const scoreA = a[Object.keys(a)[0]]?.score || 0;
+                const scoreB = b[Object.keys(b)[0]]?.score || 0;
+                return scoreB - scoreA;
               })
-              .map(([userId, users]) => {
+              // Take only top 3 players
+              .slice(0, 3)
+              .map(([userId, users], index) => {
                 const isYou = userId === myId;
                 const user = users[userId];
                 if (!user) return null;
 
                 return (
-                  <div key={userId} className={`${styles.playerStatCard} ${isYou ? styles.yourCard : styles.opponentCard} ${user.isGameOver ? styles.gameOver : ''} ${user.isPaused ? styles.paused : ''}`}>
+                  <div key={userId} className={`${styles.playerStatCard} ${isYou ? styles.yourCard : styles.opponentCard} ${user.isGameOver ? styles.gameOver : ''} ${user.isPaused ? styles.paused : ''} ${index === 0 ? styles.topPlayer : ''}`}>
+                    <div className={styles.rankBadge}>
+                      {index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉'}
+                    </div>
                     <div className={`${styles.playerNameTag} ${isYou ? styles.yourNameTag : ''}`}>
                       {isYou ? `${user.name} (YOU)` : user.name}
                       {user.isGameOver && <span className={styles.statusBadge}>GAME OVER</span>}

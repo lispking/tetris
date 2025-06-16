@@ -1,22 +1,17 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAccount, useChainId, useReadContract, useWalletClient } from 'wagmi';
+import { useAccount, useWalletClient } from 'wagmi';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import '@rainbow-me/rainbowkit/styles.css';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle, Loader2, ArrowRight, Gift } from 'lucide-react';
+import { ArrowRight, Gift, CheckCircle, Loader2 } from 'lucide-react';
 import styles from './NFTMinter.module.css';
-import { monadTestnet } from 'viem/chains';
-import TetrisNFTContract from '../contracts/TetrisNFT.json';
 import toast from 'react-hot-toast';
 import { ethers } from 'ethers';
 import { tetrisNFTContract } from '../utils/contractLoader';
-
-// Contract ABI
-const ABI = TetrisNFTContract.abi;
-
-const CONTRACT_ADDRESS = TetrisNFTContract.address.monadTestnet as `0x${string}`;
-console.log(`CONTRACT_ADDRESS: ${CONTRACT_ADDRESS}`);
+import { useNftData } from '../hooks/useNftData';
+import { useChainId } from 'wagmi';
+import { monadTestnet } from 'viem/chains';
 
 interface NFTMinterProps {
     onMintSuccess?: () => void;
@@ -42,32 +37,7 @@ const NFTMinter = ({ onMintSuccess }: NFTMinterProps) => {
         setIsClient(true);
     }, []);
 
-    const nfts = [
-        { id: 1, name: 'Classic Block', description: 'The original Tetris experience' },
-        { id: 2, name: 'Neon Glow', description: 'Vibrant colors for the night' },
-        { id: 3, name: 'Pixel Art', description: 'Retro gaming vibes' },
-        { id: 4, name: 'Cyberpunk', description: 'Future of Tetris' },
-    ];
-
-    // Check if user has already minted an NFT and get NFT info
-    const { data: nftInfo, refetch } = useReadContract({
-        address: CONTRACT_ADDRESS,
-        abi: ABI,
-        functionName: 'hasMinted',
-        args: [address!],
-        query: {
-            enabled: !!address,
-            select: (data: any) => ({
-                tokenId: data[0] as bigint,
-                resourceId: data[1] as bigint
-            })
-        }
-    });
-
-    // Get the NFT details based on resourceId
-    const ownedNft = nftInfo?.resourceId && nftInfo.resourceId > 0n
-        ? nfts.find(nft => BigInt(nft.id) === nftInfo.resourceId)
-        : null;
+    const { nfts, nftInfo, ownedNft, refetch } = useNftData(address);
 
     const handleMint = async (tokenId: bigint) => {
         if (!address || !tokenId) return;

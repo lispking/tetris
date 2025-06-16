@@ -58,9 +58,9 @@ A modern implementation of the classic Tetris game with multiplayer capabilities
 
 ## 🛠️ Built With
 
-- [React](https://reactjs.org/) - JavaScript library for building user interfaces
+- [React](https://react.dev/) - JavaScript library for building user interfaces
 - [TypeScript](https://www.typescriptlang.org/) - Typed JavaScript
-- [Vite](https://vitejs.dev/) - Next Generation Frontend Tooling
+- [Vite](https://vite.dev/) - Next Generation Frontend Tooling
 - [CSS Modules](https://github.com/css-modules/css-modules) - For scoped CSS
 - [Monad](https://monad.xyz/) - High-performance EVM-compatible blockchain
 - [Multisynq](https://multisynq.io/) - Real-time state synchronization framework

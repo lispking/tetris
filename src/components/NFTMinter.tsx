@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useAccount, useChainId, useReadContract, useWriteContract } from 'wagmi';
+import { useNavigate } from 'react-router-dom';
+import { useAccount, useChainId, useReadContract, useWalletClient } from 'wagmi';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import '@rainbow-me/rainbowkit/styles.css';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -7,24 +8,12 @@ import { CheckCircle, Loader2, ArrowRight, Gift } from 'lucide-react';
 import styles from './NFTMinter.module.css';
 import { monadTestnet } from 'viem/chains';
 import TetrisNFTContract from '../contracts/TetrisNFT.json';
+import toast from 'react-hot-toast';
+import { ethers } from 'ethers';
+import { tetrisNFTContract } from '../utils/contractLoader';
 
 // Contract ABI
-const ABI = [
-    {
-        "inputs": [{ "internalType": "address", "name": "", "type": "address" }],
-        "name": "hasMinted",
-        "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [{ "internalType": "uint256", "name": "tokenId", "type": "uint256" }],
-        "name": "mint",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    }
-] as const;
+const ABI = TetrisNFTContract.abi;
 
 const CONTRACT_ADDRESS = TetrisNFTContract.address.monadTestnet as `0x${string}`;
 console.log(`CONTRACT_ADDRESS: ${CONTRACT_ADDRESS}`);
@@ -34,7 +23,15 @@ interface NFTMinterProps {
 }
 
 const NFTMinter = ({ onMintSuccess }: NFTMinterProps) => {
+    const navigate = useNavigate();
+
+    const handleMintSuccess = () => {
+        onMintSuccess?.();
+        navigate('/multiplayer');
+    };
+
     const { address, isConnected } = useAccount();
+    const { data: walletClient } = useWalletClient();
     const chainId = useChainId();
     const [selectedTokenId, setSelectedTokenId] = useState<bigint | null>(null);
     const [isMinting, setIsMinting] = useState(false);
@@ -52,47 +49,53 @@ const NFTMinter = ({ onMintSuccess }: NFTMinterProps) => {
         { id: 4, name: 'Cyberpunk', description: 'Future of Tetris' },
     ];
 
-    // Check if user has already minted an NFT
-    const { data: hasMinted, refetch } = useReadContract({
+    // Check if user has already minted an NFT and get NFT info
+    const { data: nftInfo, refetch } = useReadContract({
         address: CONTRACT_ADDRESS,
         abi: ABI,
         functionName: 'hasMinted',
         args: [address!],
         query: {
             enabled: !!address,
+            select: (data: any) => ({
+                tokenId: data[0] as bigint,
+                resourceId: data[1] as bigint
+            })
         }
     });
 
-    const { writeContractAsync } = useWriteContract({
-        mutation: {
-            onSuccess: () => {
-                setIsMinting(false);
-                setMintSuccess(true);
-                refetch();
-                onMintSuccess?.();
-            },
-            onError: (error) => {
-                console.error('Minting error:', error);
-                setIsMinting(false);
-            },
-        },
-    });
+    // Get the NFT details based on resourceId
+    const ownedNft = nftInfo?.resourceId && nftInfo.resourceId > 0n
+        ? nfts.find(nft => BigInt(nft.id) === nftInfo.resourceId)
+        : null;
 
     const handleMint = async (tokenId: bigint) => {
         if (!address || !tokenId) return;
+
+        const toastId = toast.loading('Processing...');
         setIsMinting(true);
         setSelectedTokenId(tokenId);
 
         try {
-            await writeContractAsync({
-                address: CONTRACT_ADDRESS,
-                abi: ABI,
-                functionName: 'mint',
-                args: [tokenId],
-            });
-        } catch (error) {
-            console.error('Minting failed:', error);
+            const signer = await new ethers.BrowserProvider(walletClient!).getSigner();
+            const contract = tetrisNFTContract(signer);
+            console.log('chainId: ', await walletClient?.getChainId());
+            const tx = await contract.mint(tokenId);
+
+            await tx.wait();
+            setMintSuccess(true);
+            refetch();
+            toast.success(`Successfully minted NFT!`);
+        } catch (error: any) {
+            console.error(`Failed to mint NFT:`, error);
+            if (error.code === 'ACTION_REJECTED') {
+                toast.error('Transaction was rejected by user.');
+            } else {
+                toast.error(`Failed to mint NFT: ${error.message}`);
+            }
+        } finally {
             setIsMinting(false);
+            toast.dismiss(toastId);
         }
     };
 
@@ -125,25 +128,38 @@ const NFTMinter = ({ onMintSuccess }: NFTMinterProps) => {
                                     />
                                 </div>
                             </motion.div>
-                        ) : hasMinted ? (
+                        ) : nftInfo?.resourceId && nftInfo.resourceId > 0n && ownedNft ? (
                             <motion.div
                                 initial={{ opacity: 0, scale: 0.95 }}
                                 animate={{ opacity: 1, scale: 1 }}
-                                className={`${styles.statusMessage} ${styles.successStatus}`}
+                                className={styles.nftOwnedContainer}
                             >
-                                <div className={styles.successIcon}>
-                                    <CheckCircle className="w-10 h-10 text-green-400" />
+                                <div className={styles.nftCard}>
+                                    <div className={styles.nftImageContainer}>
+                                        <div className={styles.nftImage}>
+                                            <div className={styles.nftId}><img src={`./nfts/${ownedNft.id}.png`} alt={ownedNft.name} height={300} /></div>
+                                        </div>
+                                        <div className={styles.nftRarity}>Rare</div>
+                                    </div>
+                                    <div className={styles.nftDetails}>
+                                        <h2 className={styles.nftName}>{ownedNft.name}</h2>
+                                        <p className={styles.nftDescription}>{ownedNft.description}</p>
+                                        <div className={styles.nftOwner}>
+                                            <span>Owned by you</span>
+                                            <span className={styles.ownerAddress}>
+                                                {`${address?.slice(0, 6)}...${address?.slice(-4)}`}
+                                            </span>
+                                        </div>
+                                    </div>
                                 </div>
-                                <h2 className={styles.successTitle}>You're All Set!</h2>
-                                <p className={styles.successText}>
-                                    Your Tetris PvP NFT is ready. You can now access multiplayer mode and challenge other players!
-                                </p>
-                                <button
-                                    onClick={() => onMintSuccess?.()}
-                                    className={styles.actionButton}
-                                >
-                                    Start Playing <ArrowRight className="w-5 h-5" />
-                                </button>
+                                <div className={styles.nftActions}>
+                                    <button
+                                        onClick={handleMintSuccess}
+                                        className={styles.actionButton}
+                                    >
+                                        Play with this NFT <ArrowRight className="w-5 h-5" />
+                                    </button>
+                                </div>
                             </motion.div>
                         ) : mintSuccess ? (
                             <motion.div
@@ -159,7 +175,7 @@ const NFTMinter = ({ onMintSuccess }: NFTMinterProps) => {
                                     Your Tetris PvP NFT has been minted successfully. Welcome to the multiplayer experience!
                                 </p>
                                 <button
-                                    onClick={() => onMintSuccess?.()}
+                                    onClick={handleMintSuccess}
                                     className={styles.actionButton}
                                 >
                                     Start Playing <ArrowRight className="w-5 h-5" />
@@ -190,7 +206,7 @@ const NFTMinter = ({ onMintSuccess }: NFTMinterProps) => {
                                             return (
                                                 <motion.div
                                                     key={nft.id}
-                                                    whileHover={{ 
+                                                    whileHover={{
                                                         y: -4,
                                                         transition: { duration: 0.2, ease: 'easeOut' }
                                                     }}

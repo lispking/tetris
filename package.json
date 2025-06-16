@@ -7,8 +7,9 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "deploy": "npx hardhat deploy --network monadTestnet",
-    "upgrade": "npx hardhat upgrade --network monadTestnet"
+    "compile": "npx hardhat compile",
+    "deploy:monadTestnet": "npx hardhat deploy --network monadTestnet",
+    "upgrade:monadTestnet": "npx hardhat upgrade --network monadTestnet"
   },
   "dependencies": {
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
@@ -20,10 +21,12 @@
     "@types/react-router-dom": "^5.3.3",
     "antd": "^5.26.0",
     "dotenv": "^16.5.0",
+    "ethers": "^6.14.4",
     "framer-motion": "^12.18.1",
     "lucide-react": "^0.515.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "react-hot-toast": "^2.5.2",
     "react-icons": "^5.5.0",
     "react-router-dom": "^7.6.2",
     "react-together": "^0.4.4",

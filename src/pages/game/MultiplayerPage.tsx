@@ -28,7 +28,7 @@ const MultiplayerPage = () => {
   }
 
   return (
-    <GameLayout isMultiplayer={true} onGoHome={handleGoHome}>
+    <GameLayout onGoHome={handleGoHome}>
       {/* Game UI components specific to multiplayer */}
     </GameLayout>
   );

@@ -25,7 +25,7 @@ const SinglePlayerPage = () => {
   }
 
   return (
-    <GameLayout isMultiplayer={false} onGoHome={handleGoHome}>
+    <GameLayout onGoHome={handleGoHome}>
       {/* Game UI components specific to single player */}
     </GameLayout>
   );

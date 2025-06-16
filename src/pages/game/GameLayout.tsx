@@ -3,14 +3,13 @@ import Game from '../../components/Game';
 
 interface GameLayoutProps {
   children?: ReactNode;
-  isMultiplayer?: boolean;
   onGoHome: () => void;
 }
 
-const GameLayout = ({ children, isMultiplayer = false, onGoHome }: GameLayoutProps) => {
+const GameLayout = ({ children, onGoHome }: GameLayoutProps) => {
   return (
     <div className="game-layout">
-      <Game onGoHome={onGoHome} isMultiplayer={isMultiplayer} />
+      <Game onGoHome={onGoHome} />
       {children}
     </div>
   );

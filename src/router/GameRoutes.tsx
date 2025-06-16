@@ -24,7 +24,6 @@ const GameRoutes: React.FC<GameRoutesProps> = ({ isMultiplayer = false }) => {
     return (
       <Game
         onGoHome={handleGoHome}
-        isMultiplayer={isMultiplayer}
       />
     );
   }

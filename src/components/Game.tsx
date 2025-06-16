@@ -170,20 +170,20 @@ const Game: React.FC<GameProps> = ({ onGoHome }) => {
     trackEvent(events.NEW_GAME);
   }, [resetTetrisGame, trackEvent, events]);
 
-  const handleGoHomeClick = useCallback(() => {
-    // Only show confirmation if the game is in progress and not already over
-    if (gameStarted && !isGameOver) {
-      // Pause the game first
-      if (!gameState.isPaused) {
-        togglePause();
-      }
-      setShowConfirmDialog(true);
-    } else {
-      // If game is over or not started, go home directly
-      resetTetrisGame();
-      onGoHome?.();
-    }
-  }, [gameStarted, isGameOver, gameState.isPaused, togglePause, resetTetrisGame, onGoHome]);
+  // const handleGoHomeClick = useCallback(() => {
+  //   // Only show confirmation if the game is in progress and not already over
+  //   if (gameStarted && !isGameOver) {
+  //     // Pause the game first
+  //     if (!gameState.isPaused) {
+  //       togglePause();
+  //     }
+  //     setShowConfirmDialog(true);
+  //   } else {
+  //     // If game is over or not started, go home directly
+  //     resetTetrisGame();
+  //     onGoHome?.();
+  //   }
+  // }, [gameStarted, isGameOver, gameState.isPaused, togglePause, resetTetrisGame, onGoHome]);
 
   const handleConfirmGoHome = useCallback(() => {
     setShowConfirmDialog(false);

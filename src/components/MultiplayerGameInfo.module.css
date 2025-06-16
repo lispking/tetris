@@ -1,23 +1,123 @@
 .gameInfo {
   width: 100%;
-  max-width: 600px;
-  margin: 0 auto 20px;
+  max-width: 360px;
+  margin: 0 auto 15px;
   background: rgba(0, 0, 0, 0.7);
   border-radius: 8px;
-  padding: 10px;
-  margin: 10px 0;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 10px 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   transition: all 0.3s ease;
   border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-/* Compact mode */
+/* Rows */
+.infoRow {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+/* Score Row */
+.infoRow.scoreRow {
+  justify-content: center;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 3px;
+}
+
+/* Stats Row */
+.infoRow.statsRow {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: stretch;
+  width: 100%;
+  gap: 4px;
+}
+
+/* Info Item */
+.infoItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  text-align: center;
+  padding: 5px 4px;
+  flex: 1 1 0%;
+  min-width: 0;
+  position: relative;
+}
+
+.infoItem.scoreFlash {
+  animation: scoreFlash 0.5s ease-out;
+}
+
+@keyframes scoreFlash {
+  0% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.05); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+/* Info Label */
+.infoLabel {
+  font-size: 0.7rem;
+  color: #a78bfa;
+  margin-bottom: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  font-weight: 500;
+  opacity: 0.9;
+}
+
+/* Info Value */
+.infoValue {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  line-height: 1.2;
+}
+
+.infoValue.scoreValue {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #fff;
+  text-align: center;
+}
+
+/* Divider */
+.infoDivider {
+  width: 1px;
+  height: 30px;
+  background: rgba(255, 255, 255, 0.1);
+  margin: 0;
+  align-self: center;
+  flex-shrink: 0;
+}
+
+/* Compact mode - simplified for the new layout */
 .gameInfo.compact {
-  padding: 8px 12px;
-  margin: 2px 0;
-  background: rgba(0, 0, 0, 0.5);
-  border-radius: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  max-width: 300px;
+  padding: 10px;
+  gap: 10px;
+}
+
+.gameInfo.compact .infoValue {
+  font-size: 1rem;
+}
+
+.gameInfo.compact .infoValue.scoreValue {
+  font-size: 1.4rem;
+}
+
+.gameInfo.compact .infoLabel {
+  font-size: 0.7rem;
 }
 
 .gameInfo.compact .infoRow {

@@ -1,5 +1,5 @@
 import React from 'react';
-import styles from './GameInfo.module.css';
+import styles from './MultiplayerGameInfo.module.css';
 
 interface MultiplayerGameInfoProps {
   score?: number;
@@ -121,44 +121,51 @@ const MultiplayerGameInfo: React.FC<MultiplayerGameInfoProps> = (props) => {
 
   return (
     <div className={`${styles.gameInfo} ${compact ? styles.compact : ''} ${className}`}>
-      <div className={styles.infoRow}>
-        <div className={`${styles.infoItem} ${compact ? styles.compactItem : ''} ${isPaused ? styles.paused : ''}`}>
-          {!compact && <div className={styles.infoLabel}>
-            <TimeIcon style={{ marginRight: '4px' }} /> Time
-          </div>}
-          <div className={`${styles.infoValue} ${compact ? styles.compactValue : ''}`}>
-            {compact && <span className={styles.icon}><TimeIcon /></span>}
-            <span className={styles.timeDisplay}>
-              {timeLeft || '--:--'}
-            </span>
-            {isPaused && <span className={styles.pauseIndicator}><PauseIcon /></span>}
+      {/* Score Row - Full Width */}
+      <div className={`${styles.infoRow} ${styles.scoreRow}`}>
+        <div className={`${styles.infoItem} ${scoreFlash ? styles.scoreFlash : ''}`}>
+          <div className={styles.infoLabel}>
+            <ScoreIcon style={{ marginRight: '6px' }} /> Score
           </div>
-        </div>
-        <div className={`${styles.infoItem} ${compact ? styles.compactItem : ''} ${scoreFlash ? styles.scoreFlash : ''}`}>
-          {!compact && <div className={styles.infoLabel}>Score</div>}
-          <div className={`${styles.infoValue} ${compact ? styles.compactValue : ''}`}>
-            {compact && <span className={styles.icon}><ScoreIcon /></span>}
+          <div className={`${styles.infoValue} ${styles.scoreValue}`}>
             {typeof score === 'number' ? score.toLocaleString() : '0'}
           </div>
         </div>
-        
-        {!compact && <div className={styles.infoDivider} aria-hidden="true"></div>}
-        
-        <div className={styles.infoItem}>
-          {!compact && <div className={styles.infoLabel}>Level</div>}
-          <div className={`${styles.infoValue} ${compact ? styles.compactValue : ''}`}>
-            {compact && <span className={styles.icon}><LevelIcon /></span>}
+      </div>
+      
+      {/* Stats Row - Level, Lines, Time */}
+      <div className={`${styles.infoRow} ${styles.statsRow}`}>
+        <div className={`${styles.infoItem} ${isPaused ? styles.paused : ''}`}>
+          <div className={styles.infoLabel}>
+            <LevelIcon style={{ marginRight: '6px' }} /> Level
+          </div>
+          <div className={styles.infoValue}>
             {level ?? 1}
           </div>
         </div>
         
-        {!compact && <div className={styles.infoDivider} aria-hidden="true"></div>}
+        <div className={styles.infoDivider} aria-hidden="true"></div>
         
         <div className={styles.infoItem}>
-          {!compact && <div className={styles.infoLabel}>Lines</div>}
-          <div className={`${styles.infoValue} ${compact ? styles.compactValue : ''}`}>
-            {compact && <span className={styles.icon}><LinesIcon /></span>}
+          <div className={styles.infoLabel}>
+            <LinesIcon style={{ marginRight: '6px' }} /> Lines
+          </div>
+          <div className={styles.infoValue}>
             {lines ?? 0}
+          </div>
+        </div>
+        
+        <div className={styles.infoDivider} aria-hidden="true"></div>
+        
+        <div className={`${styles.infoItem} ${isPaused ? styles.paused : ''}`}>
+          <div className={styles.infoLabel}>
+            <TimeIcon style={{ marginRight: '6px' }} /> Time
+          </div>
+          <div className={styles.infoValue}>
+            <span className={styles.timeDisplay}>
+              {timeLeft || '--:--'}
+            </span>
+            {isPaused && <span className={styles.pauseIndicator}><PauseIcon /></span>}
           </div>
         </div>
       </div>

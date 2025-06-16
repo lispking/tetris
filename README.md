@@ -63,7 +63,7 @@ A modern implementation of the classic Tetris game with multiplayer capabilities
 - [Vite](https://vitejs.dev/) - Next Generation Frontend Tooling
 - [CSS Modules](https://github.com/css-modules/css-modules) - For scoped CSS
 - [Monad](https://monad.xyz/) - High-performance EVM-compatible blockchain
-- [Multisynq](https://multisynq.xyz/) - Real-time state synchronization framework
+- [Multisynq](https://multisynq.io/) - Real-time state synchronization framework
 
 ## 📝 License
 

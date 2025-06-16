@@ -217,7 +217,7 @@ const Game: React.FC<GameProps> = ({ onGoHome }) => {
             onCancel={handleCancelGoHome}
             confirmButtonVariant="danger"
           />
-          <div className={styles.gameHeader}>
+          {/* <div className={styles.gameHeader}>
             <h1 className={`${styles.titleWrapper} ${scoreFlash ? styles.scoreFlash : ''}`}>
               <span className={styles.tetrisIcon} aria-hidden="true">
                 <span className={styles.tetrisBlock}></span>
@@ -238,7 +238,7 @@ const Game: React.FC<GameProps> = ({ onGoHome }) => {
                 🏠
               </button>
             </h1>
-          </div>
+          </div> */}
           <div className={styles.gameContent}>
             <div className={styles.gameSidebar}>
               <GameInfo

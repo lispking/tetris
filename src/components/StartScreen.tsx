@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import styles from './StartScreen.module.css';
 import MultiplayerLobby from './MultiplayerLobby';
+import ProtectedRoute from './ProtectedRoute';
 
 interface StartScreenProps {
   onStart: () => void;
   initialRoomId?: string;
+  isMultiplayer?: boolean;
 }
 
-const StartScreen: React.FC<StartScreenProps> = ({ onStart, initialRoomId = '' }) => {
-  const [showMultiplayer, setShowMultiplayer] = useState(!!initialRoomId);
+const StartScreen: React.FC<StartScreenProps> = ({ onStart, initialRoomId = '', isMultiplayer = false }) => {
+  const [showMultiplayer, setShowMultiplayer] = useState(!!initialRoomId || isMultiplayer);
 
   // Auto-connect to the room if initialRoomId is provided
   useEffect(() => {
@@ -22,13 +24,15 @@ const StartScreen: React.FC<StartScreenProps> = ({ onStart, initialRoomId = '' }
     }
   }, [initialRoomId, showMultiplayer]);
 
-  if (showMultiplayer) {
+  if (showMultiplayer || isMultiplayer) {
     return (
       <div className={styles.multiplayerContainer}>
-        <MultiplayerLobby
-          initialRoomId={initialRoomId}
-          onBack={() => setShowMultiplayer(false)}
-        />
+        <ProtectedRoute>
+          <MultiplayerLobby
+            initialRoomId={initialRoomId}
+            onBack={() => setShowMultiplayer(false)}
+          />
+        </ProtectedRoute>
       </div>
     );
   }

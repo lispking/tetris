@@ -1,66 +1,42 @@
-import React, { useState, useCallback, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, useSearchParams } from 'react-router-dom';
-import Game from './components/Game';
-import StartScreen from './components/StartScreen';
+import React from 'react';
+import { BrowserRouter as Router } from 'react-router-dom';
+import { WagmiProvider, http } from 'wagmi';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { getDefaultConfig, RainbowKitProvider, darkTheme } from '@rainbow-me/rainbowkit';
+import { monadTestnet } from 'viem/chains';
+import '@rainbow-me/rainbowkit/styles.css';
+import Header from './components/Header';
+import AppRouter from './router/AppRouter';
 import './App.css';
 
-const GameRoutes: React.FC = () => {
-  const [searchParams] = useSearchParams();
-  const roomId = searchParams.get('room') || '';
-  const [gameStarted, setGameStarted] = useState(false);
-  
-  const handleStartGame = useCallback(() => {
-    setGameStarted(true);
-  }, []);
+// Configure RainbowKit
+const config = getDefaultConfig({
+  appName: 'Tetris PvP',
+  projectId: 'YOUR_WALLETCONNECT_PROJECT_ID', // Replace with your WalletConnect project ID
+  chains: [monadTestnet],
+  transports: {
+    [monadTestnet.id]: http(),
+  },
+});
 
-  const handleGoHome = useCallback(() => {
-    setGameStarted(false);
-  }, []);
-  
-  // Reset game state when returning home
-  useEffect(() => {
-    return () => {
-      if (!gameStarted) {
-        // Any cleanup needed when going back to start screen
-      }
-    };
-  }, [gameStarted]);
-
-  if (gameStarted) {
-    return <Game onGoHome={handleGoHome} />;
-  }
-
-  return (
-    <Routes>
-      <Route 
-        path="/" 
-        element={
-          <StartScreen 
-            onStart={handleStartGame} 
-            initialRoomId={roomId} 
-          />
-        } 
-      />
-      <Route 
-        path="/multiplayer" 
-        element={
-          <StartScreen 
-            onStart={handleStartGame} 
-            initialRoomId={roomId} 
-          />
-        } 
-      />
-    </Routes>
-  );
-};
+const queryClient = new QueryClient();
 
 const App: React.FC = () => {
   return (
-    <Router>
-      <div className="app">
-        <GameRoutes />
-      </div>
-    </Router>
+    <WagmiProvider config={config}>
+      <QueryClientProvider client={queryClient}>
+        <RainbowKitProvider theme={darkTheme()}>
+          <div className="app">
+            <Router>
+              <Header />
+              <main>
+                <AppRouter />
+              </main>
+            </Router>
+          </div>
+        </RainbowKitProvider>
+      </QueryClientProvider>
+    </WagmiProvider>
   );
 };
 

@@ -172,9 +172,9 @@ const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({ initialRoomId = '',
                             >
                                 {isLoading ? 'Joining...' : 'Join Room'}
                             </button>
-                            <button className={styles.backButton} onClick={handleBack}>
+                            {/* <button className={styles.backButton} onClick={handleBack}>
                                 Back to Menu
-                            </button>
+                            </button> */}
                         </div>
                     </form>
                 </div>

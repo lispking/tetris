@@ -5,13 +5,12 @@
   justify-content: flex-start;
   width: 100%;
   max-width: 1200px;
-  min-height: 100%;
   background: #1a1a2e;
   color: white;
   font-family: 'Arial', sans-serif;
   padding: 20px;
   box-sizing: border-box;
-  margin: 0 auto;
+  margin-top: 80px;
 }
 
 .gameHeader {

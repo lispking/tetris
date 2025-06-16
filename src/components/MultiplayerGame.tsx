@@ -11,7 +11,7 @@ import Countdown from './Countdown';
 import GameTimer from './GameTimer';
 import MultiplayerGameOver from './MultiplayerGameOver';
 import { placePiece } from '../utils/gameUtils';
-import styles from './Game.module.css';
+import styles from './MultiplayerGame.module.css';
 
 interface PlayerStats {
   id: string;

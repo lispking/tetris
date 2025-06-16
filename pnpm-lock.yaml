@@ -96,6 +96,9 @@ importers:
       globals:
         specifier: ^16.0.0
         version: 16.2.0
+      hardhat:
+        specifier: ^2.24.3
+        version: 2.24.3(bufferutil@4.0.9)(ts-node@10.9.2(@types/node@24.0.1)(typescript@5.8.3))(typescript@5.8.3)(utf-8-validate@5.0.10)
       hardhat-contract-sizer:
         specifier: ^2.10.0
         version: 2.10.0(hardhat@2.24.3(bufferutil@4.0.9)(ts-node@10.9.2(@types/node@24.0.1)(typescript@5.8.3))(typescript@5.8.3)(utf-8-validate@5.0.10))

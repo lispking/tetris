@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle, Loader2, ArrowRight, Gift } from 'lucide-react';
 import styles from './NFTMinter.module.css';
 import { monadTestnet } from 'viem/chains';
+import TetrisNFTContract from '../contracts/TetrisNFT.json';
 
 // Contract ABI
 const ABI = [
@@ -25,8 +26,8 @@ const ABI = [
     }
 ] as const;
 
-// Replace with your deployed contract address
-const CONTRACT_ADDRESS = "0xYOUR_CONTRACT_ADDRESS" as `0x${string}`;
+const CONTRACT_ADDRESS = TetrisNFTContract.address.monadTestnet;
+console.log(`CONTRACT_ADDRESS: ${CONTRACT_ADDRESS}`);
 
 interface NFTMinterProps {
     onMintSuccess?: () => void;

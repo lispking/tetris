@@ -26,7 +26,7 @@ const ABI = [
     }
 ] as const;
 
-const CONTRACT_ADDRESS = TetrisNFTContract.address.monadTestnet;
+const CONTRACT_ADDRESS = TetrisNFTContract.address.monadTestnet as `0x${string}`;
 console.log(`CONTRACT_ADDRESS: ${CONTRACT_ADDRESS}`);
 
 interface NFTMinterProps {

@@ -253,6 +253,7 @@
   align-items: center;
   justify-content: center;
   margin-left: auto;
+  margin-right: 23px;
   animation: pulse 2s infinite;
 }
 

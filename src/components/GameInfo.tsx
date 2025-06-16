@@ -7,7 +7,7 @@ interface GameInfoProps {
   lines?: number;
   scoreFlash?: boolean;
   compact?: boolean;
-  timeLeft?: string;
+  timeLeft?: React.ReactNode;
   isPaused?: boolean;
   className?: string;
 }
@@ -19,7 +19,7 @@ const GameInfo: React.FC<GameInfoProps> = (props) => {
     lines = 0, 
     scoreFlash = false,
     compact = false,
-    timeLeft = '3:00',
+    timeLeft = '1:00',
     isPaused = false,
     className = ''
   } = props;
@@ -119,21 +119,17 @@ const GameInfo: React.FC<GameInfoProps> = (props) => {
     </svg>
   );
 
-  // Add warning class when time is low (less than 30 seconds)
-  const isTimeLow = timeLeft && timeLeft.split(':').length === 2 && 
-    (parseInt(timeLeft.split(':')[0]) === 0 && parseInt(timeLeft.split(':')[1]) <= 30);
-
   return (
     <div className={`${styles.gameInfo} ${compact ? styles.compact : ''} ${className}`}>
       <div className={styles.infoRow}>
-        <div className={`${styles.infoItem} ${compact ? styles.compactItem : ''} ${isTimeLow ? styles.warning : ''} ${isPaused ? styles.paused : ''}`}>
+        <div className={`${styles.infoItem} ${compact ? styles.compactItem : ''} ${isPaused ? styles.paused : ''}`}>
           {!compact && <div className={styles.infoLabel}>
             <TimeIcon style={{ marginRight: '4px' }} /> Time
           </div>}
-          <div className={`${styles.infoValue} ${compact ? styles.compactValue : ''} ${isTimeLow ? styles.timeWarning : ''}`}>
+          <div className={`${styles.infoValue} ${compact ? styles.compactValue : ''}`}>
             {compact && <span className={styles.icon}><TimeIcon /></span>}
             <span className={styles.timeDisplay}>
-              {timeLeft}
+              {timeLeft || '--:--'}
             </span>
             {isPaused && <span className={styles.pauseIndicator}><PauseIcon /></span>}
           </div>

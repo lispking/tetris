@@ -8,6 +8,7 @@ import GameOver from './GameOver';
 import NextPiecePreview from './NextPiecePreview';
 import Controls from './Controls';
 import Countdown from './Countdown';
+import GameTimer from './GameTimer';
 import MultiplayerGameOver from './MultiplayerGameOver';
 import { placePiece } from '../utils/gameUtils';
 import styles from './Game.module.css';
@@ -41,25 +42,16 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
   const [clearedLines, setClearedLines] = useState<number[]>([]);
   const [scoreFlash, setScoreFlash] = useState(false);
   const [prevScore, setPrevScore] = useState(0);
-  const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
   const [showCountdown, setShowCountdown] = useState(true);
   const [allPlayersGameOver, setAllPlayersGameOver] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(0);
-  const [isTimeUp, setIsTimeUp] = useState(false);
-  const [isTimeUpState, setIsTimeUpState] = useState(false);
-  
-  // Initialize timer with gameDuration when component mounts or gameDuration changes
-  useEffect(() => {
-    console.log('Initializing timer with duration:', gameDuration);
-    setTimeLeft(gameDuration);
-    setIsTimeUp(false);
-    setIsTimeUpState(false);
-  }, [gameDuration]);
+
+  const handleTimeUp = useCallback(() => {
+    setGameOver(true);
+  }, []);
   const { trackEvent, events } = useAnalytics();
   const myId = useMyId();
   const gameStartedRef = useRef(false);
   const isPausedRef = useRef(true);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Get the tetris game state
   const {
@@ -72,6 +64,7 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
     togglePause,
     startGame,
     resetGame,
+    setGameOver,
     move,
     rotate,
     isPaused
@@ -102,93 +95,9 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
     }));
   }, [playerName, score, level, gameState.lines, gameStarted, isGameOver, isPaused, setPlayerStats, myId]);
 
-  // Handle countdown timer
-  useEffect(() => {
-    console.log('Timer effect - gameStarted:', gameStarted, 'isGameOver:', isGameOver, 'isTimeUp:', isTimeUp);
-    
-    if (gameStarted && !isGameOver && !isTimeUp) {
-      console.log('Starting countdown timer with timeLeft:', timeLeft);
-      
-      // Clear any existing interval
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-      }
-      
-      // Start new interval
-      timerRef.current = setInterval(() => {
-        console.log('Timer tick, current timeLeft:', timeLeft);
-        setTimeLeft(prev => {
-          console.log('Updating timeLeft from', prev, 'to', prev - 1);
-          if (prev <= 1) {
-            console.log('Time is up!');
-            clearInterval(timerRef.current as NodeJS.Timeout);
-            setIsTimeUp(true);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    } else if (!gameStarted) {
-      console.log('Game not started yet');
-    } else if (isGameOver) {
-      console.log('Game over, stopping timer');
-    } else if (isTimeUp) {
-      console.log('Time is already up');
-    }
-
-    return () => {
-      console.log('Cleaning up timer');
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-      }
-    };
-  }, [gameStarted, isGameOver, isTimeUp, timeLeft]);
-
-  // Handle game over when time is up
-  useEffect(() => {
-    if (isTimeUp && !isGameOver) {
-      setIsTimeUpState(true);
-      if (!isPaused) {
-        togglePause();
-      }
-    }
-  }, [isTimeUp, isGameOver, isPaused, togglePause]);
-
   // Track game start
   useEffect(() => {
-    console.log('Game started:', gameStarted, 'gameDuration:', gameDuration);
-    
     if (gameStarted) {
-      console.log('Game started, resetting timer to', gameDuration, 'seconds');
-      // Reset timer when game starts
-      setTimeLeft(gameDuration);
-      setIsTimeUp(false);
-      setIsTimeUpState(false);
-      
-      // Clear any existing interval
-      if (timerRef.current) {
-        console.log('Clearing existing timer interval');
-        clearInterval(timerRef.current);
-      }
-      
-      // Start the countdown timer
-      console.log('Starting new timer');
-      const timer = setInterval(() => {
-        setTimeLeft(prev => {
-          const newTime = prev - 1;
-          console.log('Countdown:', newTime);
-          if (newTime <= 0) {
-            console.log('Time is up!');
-            clearInterval(timer);
-            setIsTimeUp(true);
-            return 0;
-          }
-          return newTime;
-        });
-      }, 1000);
-      
-      timerRef.current = timer;
-      
       trackEvent(events.GAME_START, {
         mode: 'multiplayer',
         roomId,
@@ -198,7 +107,7 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
         duration: gameDuration
       });
     }
-  }, [gameStarted, roomId, playerName, isHost, trackEvent, events]);
+  }, [gameStarted, roomId, playerName, isHost, trackEvent, events, gameDuration]);
 
   // Track game over and check if all players are done
   useEffect(() => {
@@ -298,26 +207,6 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
     startGame();
   }, [resetGame, startGame, trackEvent, events, roomId]);
 
-  // Format time as MM:SS
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
-  };
-
-  // Add warning class when time is running low (less than 30 seconds)
-  const isTimeLow = timeLeft <= 30;
-  
-  // Add time left to the game info
-  const gameInfoProps = {
-    score,
-    level,
-    lines: gameState.lines,
-    timeLeft: formatTime(timeLeft),
-    isPaused: isPausedRef.current || isPaused,
-    className: isTimeLow ? 'warning' : ''
-  };
-
   return (
     <div className={`${styles.gameContainer} ${styles.multiplayer}`}>
       {showCountdown && (
@@ -377,8 +266,16 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
                     lines={user.lines}
                     scoreFlash={isYou && score > prevScore}
                     compact={true}
-                    timeLeft={`${Math.floor(timeLeft / 60)}:${(timeLeft % 60).toString().padStart(2, '0')}`}
-                    isPaused={isPaused}
+                    timeLeft={
+                      <GameTimer 
+                        gameDuration={gameDuration}
+                        gameStarted={gameStarted}
+                        isGameOver={isGameOver}
+                        isPaused={isPaused}
+                        togglePause={togglePause}
+                        onTimeUp={handleTimeUp}
+                      />
+                    }
                   />
                 </div>
               );
@@ -396,40 +293,6 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
             >
               {copySuccess ? '✓ Copied!' : '📋'}
             </button>
-            <button
-              onClick={() => setShowLeaveConfirm(true)}
-              className={`${styles.headerButton} ${styles.leaveButton}`}
-              title="Leave Game"
-            >
-              Leave
-            </button>
-            {showLeaveConfirm && (
-              <div className={styles.confirmDialogOverlay}>
-                <div className={styles.confirmContent}>
-                  <p>Leave game?<br />Current progress will be lost.</p>
-                  <div className={styles.confirmButtons}>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onLeave();
-                      }}
-                      className={styles.confirmButton}
-                    >
-                      Leave
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setShowLeaveConfirm(false);
-                      }}
-                      className={styles.cancelButton}
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </div>
@@ -441,18 +304,13 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
             board={renderBoard}
             clearedLines={clearedLines}
           />
-          {isTimeUpState && (
+          {isGameOver && (
             <GameOver 
               score={score}
               level={level}
               lines={gameState.lines}
               isMultiplayer={true}
             />
-          )}
-          {isGameOver && !allPlayersGameOver && (
-            <div className={styles.individualGameOver}>
-              <GameInfo {...gameInfoProps} />
-            </div>
           )}
           {allPlayersGameOver && (
             <MultiplayerGameOver
@@ -462,7 +320,6 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
                 score: users[id]?.score || 0,
                 isYou: id === myId,
               }))}
-              onNewGame={handleNewGame}
               onBackToLobby={onLeave}
             />
           )}

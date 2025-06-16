@@ -61,6 +61,14 @@ export const useTetris = () => {
     setGameStarted(true);
   }, []);
 
+  // Set game over state
+  const setGameOver = useCallback((isOver: boolean) => {
+    setGameState(prev => ({
+      ...prev,
+      isGameOver: isOver
+    }));
+  }, []);
+
   // Pause/Resume the game
   const togglePause = useCallback(() => {
     setGameState(prev => ({
@@ -346,6 +354,7 @@ export const useTetris = () => {
     gameStarted,
     startGame,
     togglePause,
+    setGameOver,
     move,
     rotate,
     resetGame,

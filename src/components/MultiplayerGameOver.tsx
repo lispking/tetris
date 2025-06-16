@@ -10,13 +10,11 @@ interface PlayerResult {
 
 interface MultiplayerGameOverProps {
   playerResults: PlayerResult[];
-  onNewGame: () => void;
   onBackToLobby: () => void;
 }
 
 const MultiplayerGameOver: React.FC<MultiplayerGameOverProps> = ({
   playerResults,
-  onNewGame,
   onBackToLobby,
 }) => {
   // Sort players by score in descending order
@@ -61,12 +59,6 @@ const MultiplayerGameOver: React.FC<MultiplayerGameOverProps> = ({
         </div>
 
         <div className={styles.buttonGroup}>
-          <button 
-            onClick={onNewGame}
-            className={`${styles.button} ${styles.primaryButton}`}
-          >
-            Play Again
-          </button>
           <button 
             onClick={onBackToLobby}
             className={`${styles.button} ${styles.secondaryButton}`}

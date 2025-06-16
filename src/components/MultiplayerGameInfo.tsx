@@ -125,10 +125,10 @@ const MultiplayerGameInfo: React.FC<MultiplayerGameInfoProps> = (props) => {
       <div className={`${styles.infoRow} ${styles.scoreRow}`}>
         <div className={`${styles.infoItem} ${scoreFlash ? styles.scoreFlash : ''}`}>
           <div className={styles.infoLabel}>
-            <ScoreIcon style={{ marginRight: '6px' }} /> Score
-          </div>
-          <div className={`${styles.infoValue} ${styles.scoreValue}`}>
-            {typeof score === 'number' ? score.toLocaleString() : '0'}
+            <ScoreIcon style={{ marginRight: '6px' }} /> Score：
+            <span className={`${styles.infoValue} ${styles.scoreValue}`}>
+              {typeof score === 'number' ? score.toLocaleString() : '0'}
+            </span>
           </div>
         </div>
       </div>

@@ -57,10 +57,9 @@
 .stats {
   margin: 0 auto 2.5rem;
   background: rgba(255, 255, 255, 0.05);
-  padding: 1.5rem 2rem;
+  padding: 1.5rem 1.5rem;
   border-radius: 10px;
   width: 100%;
-  max-width: 280px;
   box-sizing: border-box;
 }
 
@@ -75,6 +74,7 @@
   letter-spacing: 0.5px;
   padding: 0.5rem 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  overflow: hidden;
 }
 
 .stats p:last-child {
@@ -90,6 +90,29 @@
   margin-right: 1rem;
   text-transform: uppercase;
   letter-spacing: 1px;
+  flex-shrink: 0;
+}
+
+.stats p[data-label="Score"] {
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: #ffd700;
+  text-shadow: 0 0 8px rgba(255, 215, 0, 0.3);
+  text-align: right;
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  direction: rtl;
+  text-indent: 0.5em;
+  padding-left: 0.5em;
+}
+
+.stats p[data-label="Score"]::before {
+  display: block;
+  text-align: left;
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
 }
 
 .buttonGroup {

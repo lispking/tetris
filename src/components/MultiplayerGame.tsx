@@ -236,64 +236,20 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
       </div>
 
       <div className={`${styles.gameContainer} ${styles.multiplayer}`}>
-        {/* Left Sidebar - Player Stats */}
-        <div className={styles.sidebar}>
-          <div className={styles.sectionHeader}>
-            <div className={styles.gameControls}>
-              <button
-                onClick={() => {
-                  navigator.clipboard.writeText(roomId);
-                  setCopySuccess(true);
-                  setTimeout(() => setCopySuccess(false), 2000);
-                }}
-                className={styles.headerButton}
-                title="Copy Room ID"
-              >
-                {copySuccess ? '✓ Copied!' : '📋 Room ID'}: {roomId}
-              </button>
-            </div>
-          </div>
-          
-          <div className={styles.playerStatsHeader}>
-            {Object.entries(playerStatsByUser)
-              .sort(([aId], [bId]) => {
-                if (aId === myId) return -1;
-                if (bId === myId) return 1;
-                return aId.localeCompare(bId);
-              })
-              .map(([userId, users]) => {
-                const isYou = userId === myId;
-                const user = users[userId];
-                if (!user) return null;
-
-                return (
-                  <div key={userId} className={`${styles.playerStatCard} ${isYou ? styles.yourCard : styles.opponentCard} ${user.isGameOver ? styles.gameOver : ''} ${user.isPaused ? styles.paused : ''}`}>
-                    <div className={`${styles.playerNameTag} ${isYou ? styles.yourNameTag : ''}`}>
-                      {isYou ? `${user.name} (YOU)` : user.name}
-                      {user.isGameOver && <span className={styles.statusBadge}>GAME OVER</span>}
-                      {user.isPaused && !user.isGameOver && <span className={styles.statusBadge}>PAUSED</span>}
-                    </div>
-                    <MultiplayerGameInfo
-                      score={user.score}
-                      level={user.level}
-                      lines={user.lines}
-                      scoreFlash={isYou && score > prevScore}
-                      compact={true}
-                      timeLeft={
-                        <GameTimer 
-                          gameDuration={gameDuration}
-                          gameStarted={gameStarted}
-                          isGameOver={isGameOver}
-                          isPaused={isPaused}
-                          togglePause={togglePause}
-                          onTimeUp={handleTimeUp}
-                        />
-                      }
-                    />
-                  </div>
-                );
-              })}
-          </div>
+        {/* Left Sidebar - Controls */}
+        <div className={styles.controlsSidebar}>
+          <NextPiecePreview piece={gameState.nextPiece} />
+          <Controls
+            onPause={togglePause}
+            onNewGame={handleNewGame}
+            isPaused={gameState.isPaused}
+            onMoveLeft={() => move('left')}
+            onMoveRight={() => move('right')}
+            onRotate={rotate}
+            onHardDrop={() => move('drop')}
+            onSoftDrop={() => move('down')}
+            showNewGame={false}
+          />
         </div>
 
         {/* Main Game Area */}
@@ -335,20 +291,72 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
           </div>
         </div>
 
-        {/* Right Sidebar - Controls */}
-        <div className={styles.controlsSidebar}>
-          <NextPiecePreview piece={gameState.nextPiece} />
-          <Controls
-            onPause={togglePause}
-            onNewGame={handleNewGame}
-            isPaused={gameState.isPaused}
-            onMoveLeft={() => move('left')}
-            onMoveRight={() => move('right')}
-            onRotate={rotate}
-            onHardDrop={() => move('drop')}
-            onSoftDrop={() => move('down')}
-            showNewGame={false}
-          />
+        {/* Right Sidebar - Player Stats */}
+        <div className={styles.sidebar}>
+          <div className={styles.statsHeader}>
+            <div className={styles.roomIdContainer}>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(roomId);
+                  setCopySuccess(true);
+                  setTimeout(() => setCopySuccess(false), 2000);
+                }}
+                className={styles.roomIdButton}
+                title="Copy Room ID"
+              >
+                {copySuccess ? '✓ Copied!' : '📋 Room ID'}: {roomId}
+              </button>
+            </div>
+            <div className={styles.playerCount}>
+              Players: {Object.keys(playerStatsByUser).length}
+            </div>
+          </div>
+          <div className={styles.playerStatsHeader}>
+            {Object.entries(playerStatsByUser)
+              // Sort by score in descending order
+              .sort(([, a], [, b]) => {
+                const scoreA = a[Object.keys(a)[0]]?.score || 0;
+                const scoreB = b[Object.keys(b)[0]]?.score || 0;
+                return scoreB - scoreA;
+              })
+              // Take only top 3 players
+              .slice(0, 3)
+              .map(([userId, users], index) => {
+                const isYou = userId === myId;
+                const user = users[userId];
+                if (!user) return null;
+
+                return (
+                  <div key={userId} className={`${styles.playerStatCard} ${isYou ? styles.yourCard : styles.opponentCard} ${user.isGameOver ? styles.gameOver : ''} ${user.isPaused ? styles.paused : ''} ${index === 0 ? styles.topPlayer : ''}`}>
+                    <div className={styles.rankBadge}>
+                      {index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉'}
+                    </div>
+                    <div className={`${styles.playerNameTag} ${isYou ? styles.yourNameTag : ''}`}>
+                      {isYou ? `${user.name} (YOU)` : user.name}
+                      {user.isGameOver && <span className={styles.statusBadge}>GAME OVER</span>}
+                      {user.isPaused && !user.isGameOver && <span className={styles.statusBadge}>PAUSED</span>}
+                    </div>
+                    <MultiplayerGameInfo
+                      score={user.score}
+                      level={user.level}
+                      lines={user.lines}
+                      scoreFlash={isYou && score > prevScore}
+                      compact={true}
+                      timeLeft={
+                        <GameTimer 
+                          gameDuration={gameDuration}
+                          gameStarted={gameStarted}
+                          isGameOver={isGameOver}
+                          isPaused={isPaused}
+                          togglePause={togglePause}
+                          onTimeUp={handleTimeUp}
+                        />
+                      }
+                    />
+                  </div>
+                );
+              })}
+          </div>
         </div>
       </div>
     </>

@@ -59,6 +59,7 @@
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-left: 4px solid transparent;
   box-sizing: border-box;
 }
@@ -129,11 +130,11 @@
 .playerStatsHeader {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 12px;
   width: 100%;
   overflow-y: auto;
   max-height: calc(100vh - 200px);
-  padding-right: 10px;
+  padding: 8px 8px 16px 0;
   
   /* Custom scrollbar */
   &::-webkit-scrollbar {
@@ -216,12 +217,15 @@
 }
 
 .playerStatCard {
-  flex: 1;
-  min-width: 150px;
+  position: relative;
   background: rgba(0, 0, 0, 0.4);
-  border-radius: 6px;
-  padding: 8px 12px;
+  border-radius: 8px;
+  padding: 12px 16px;
   border-left: 4px solid #4CAF50;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+  margin-bottom: 12px;
+  overflow: hidden;
 }
 
 .opponentCard {
@@ -232,13 +236,15 @@
   font-size: 14px;
   font-weight: 600;
   color: #4fd2d2;
-  margin-bottom: 8px;
+  margin: 0 0 10px 0;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
+  position: relative;
+  z-index: 1;
 }
 
 .statusBadge {
@@ -252,6 +258,7 @@
   align-items: center;
   justify-content: center;
   margin-left: auto;
+  margin-right: 23px;
   animation: pulse 2s infinite;
 }
 
@@ -265,6 +272,106 @@
   background-color: rgba(255, 200, 50, 0.3);
   color: #ffdb4d;
   border: 1px solid #ffcc00;
+}
+
+/* Stats header */
+.statsHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0 0 15px 0;
+  padding: 12px 16px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.roomIdContainer {
+  flex: 1;
+  margin-right: 10px;
+}
+
+.roomIdButton {
+  background: rgba(0, 0, 0, 0.3);
+  color: #a8d8ff;
+  border: 1px solid rgba(168, 216, 255, 0.2);
+  border-radius: 4px;
+  padding: 6px 10px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  display: inline-block;
+}
+
+.roomIdButton:hover {
+  background: rgba(0, 0, 0, 0.4);
+  border-color: rgba(168, 216, 255, 0.4);
+}
+
+/* Player count */
+.playerCount {
+  background: rgba(0, 0, 0, 0.3);
+  color: #a8d8ff;
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border: 1px solid rgba(168, 216, 255, 0.2);
+  white-space: nowrap;
+}
+
+/* Rank badges */
+.rankBadge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 1.2rem;
+  background: rgba(0, 0, 0, 0.4);
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Top player highlight */
+.playerStatCard.topPlayer {
+  border-left: 6px solid #ffd700 !important;
+  border-top: 1px solid rgba(255, 215, 0, 0.3) !important;
+  border-right: 1px solid rgba(255, 215, 0, 0.3) !important;
+  border-bottom: 1px solid rgba(255, 215, 0, 0.3) !important;
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.4) !important;
+  transform: scale(1.02);
+  z-index: 2;
+  position: relative;
+  overflow: visible;
+  background: linear-gradient(90deg, rgba(255, 215, 0, 0.08), rgba(0, 0, 0, 0.6)) !important;
+  animation: glow 2s infinite alternate;
+}
+
+@keyframes glow {
+  from {
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
+  }
+  to {
+    box-shadow: 0 0 25px rgba(255, 215, 0, 0.6);
+  }
+}
+
+.playerStatCard.topPlayer::before {
+  position: absolute;
+  top: -5px;
+  left: -5px;
+  color: #ffd700;
+  font-size: 1.5rem;
+  text-shadow: 0 0 8px rgba(255, 215, 0, 0.8);
+  z-index: 3;
 }
 
 @keyframes pulse {

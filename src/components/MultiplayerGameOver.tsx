@@ -35,7 +35,7 @@ const MultiplayerGameOver: React.FC<MultiplayerGameOverProps> = ({
         ) : (
           <div className={styles.resultMessage}>
             <p>{winner.isYou ? 'You Win!' : `${winner.name} Wins!`}</p>
-            <p>Score: {winner.score}</p>
+            <p>Score: {typeof winner.score === 'number' ? winner.score.toLocaleString() : '0'}</p>
           </div>
         )}
 
@@ -52,7 +52,7 @@ const MultiplayerGameOver: React.FC<MultiplayerGameOverProps> = ({
                   {player.name}
                   {player.isYou && <span className={styles.youBadge}>(You)</span>}
                 </span>
-                <span className={styles.score}>{player.score}</span>
+                <span className={styles.score}>{typeof player.score === 'number' ? player.score.toLocaleString() : '0'}</span>
               </div>
             ))}
           </div>

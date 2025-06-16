@@ -3,7 +3,7 @@ import { useTetris } from '../hooks/useTetris';
 import { useAnalytics } from '../contexts/AnalyticsContext';
 import { useMyId, useStateTogetherWithPerUserValues } from 'react-together';
 import Board from './Board';
-import GameInfo from './GameInfo';
+import MultiplayerGameInfo from './MultiplayerGameInfo';
 import GameOver from './GameOver';
 import NextPiecePreview from './NextPiecePreview';
 import Controls from './Controls';
@@ -11,7 +11,7 @@ import Countdown from './Countdown';
 import GameTimer from './GameTimer';
 import MultiplayerGameOver from './MultiplayerGameOver';
 import { placePiece } from '../utils/gameUtils';
-import styles from './Game.module.css';
+import styles from './MultiplayerGame.module.css';
 
 interface PlayerStats {
   id: string;
@@ -208,7 +208,7 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
   }, [resetGame, startGame, trackEvent, events, roomId]);
 
   return (
-    <div className={`${styles.gameContainer} ${styles.multiplayer}`}>
+    <>
       {showCountdown && (
         <Countdown
           onCountdownStart={handleCountdownStart}
@@ -219,121 +219,124 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
           countFrom={3}
         />
       )}
-
-      {/* Player Stats Header */}
-      <div className={styles.gameHeader}>
-        <div className={styles.gameTitle}>
-          <h1 className={`${styles.titleWrapper} ${scoreFlash ? styles.scoreFlash : ''}`}>
-            <span className={styles.tetrisIcon} aria-hidden="true">
-              <span className={styles.tetrisBlock}></span>
-              <span className={styles.tetrisBlock}></span>
-              <span className={styles.tetrisBlock}></span>
-              <span className={styles.tetrisBlock}></span>
-            </span>
-            <span className={styles.titleText}>
-              <span className={styles.titleGlow}>TETRIS BATTLE</span>
-              <span className={styles.titleShadow} aria-hidden="true">TETRIS BATTLE</span>
-            </span>
-          </h1>
-        </div>
-
-        <div className={styles.playerStatsHeader}>
-          {Object.entries(playerStatsByUser)
-            .sort(([aId], [bId]) => {
-              // Put current user first, then sort others by their ID
-              if (aId === myId) return -1;
-              if (bId === myId) return 1;
-              return aId.localeCompare(bId);
-            })
-            .map(([userId, users]) => {
-              const isYou = userId === myId;
-              const user = users[userId];
-              if (!user) {
-                return null;
-              }
-
-              return (
-                <div key={userId} className={`${styles.playerStatCard} ${isYou ? styles.yourCard : styles.opponentCard} ${user.isGameOver ? styles.gameOver : ''
-                  } ${user.isPaused ? styles.paused : ''}`}>
-                  <div className={`${styles.playerNameTag} ${isYou ? styles.yourNameTag : ''}`}>
-                    {isYou ? `${user.name} (YOU)` : user.name}
-                    {user.isGameOver && <span className={styles.statusBadge}>GAME OVER</span>}
-                    {user.isPaused && !user.isGameOver && <span className={styles.statusBadge}>PAUSED</span>}
-                  </div>
-                  <GameInfo
-                    score={user.score}
-                    level={user.level}
-                    lines={user.lines}
-                    scoreFlash={isYou && score > prevScore}
-                    compact={true}
-                    timeLeft={
-                      <GameTimer 
-                        gameDuration={gameDuration}
-                        gameStarted={gameStarted}
-                        isGameOver={isGameOver}
-                        isPaused={isPaused}
-                        togglePause={togglePause}
-                        onTimeUp={handleTimeUp}
-                      />
-                    }
-                  />
-                </div>
-              );
-            })}
-
-          <div className={styles.gameControls}>
-            <button
-              onClick={() => {
-                navigator.clipboard.writeText(roomId);
-                setCopySuccess(true);
-                setTimeout(() => setCopySuccess(false), 2000);
-              }}
-              className={styles.headerButton}
-              title="Copy Room ID"
-            >
-              {copySuccess ? '✓ Copied!' : '📋'}
-            </button>
-          </div>
-        </div>
+      
+      <div className={styles.gameTitleContainer}>
+        <h1 className={`${styles.titleWrapper} ${scoreFlash ? styles.scoreFlash : ''}`}>
+          <span className={styles.tetrisIcon} aria-hidden="true">
+            <span className={styles.tetrisBlock}></span>
+            <span className={styles.tetrisBlock}></span>
+            <span className={styles.tetrisBlock}></span>
+            <span className={styles.tetrisBlock}></span>
+          </span>
+          <span className={styles.titleText}>
+            <span className={styles.titleGlow}>TETRIS BATTLE</span>
+            <span className={styles.titleShadow} aria-hidden="true">TETRIS BATTLE</span>
+          </span>
+        </h1>
       </div>
 
-      <div className={styles.gameContent}>
-        <div className={`${styles.gameBoard} ${isGameOver ? styles.gameOverActive : ''}`}>
-          {/* Game board content */}
-          <Board
-            board={renderBoard}
-            clearedLines={clearedLines}
-          />
-          {isGameOver && (
-            <GameOver 
-              score={score}
-              level={level}
-              lines={gameState.lines}
-              isMultiplayer={true}
-            />
-          )}
-          {allPlayersGameOver && (
-            <MultiplayerGameOver
-              playerResults={Object.entries(playerStatsByUser).map(([id, users]) => ({
-                id,
-                name: users[id]?.name || 'Unknown',
-                score: users[id]?.score || 0,
-                isYou: id === myId,
-              }))}
-              onBackToLobby={onLeave}
-            />
-          )}
-          {gameState.isPaused && (
-            <div className={styles.pausedOverlay}>
-              <div className={styles.pausedText}>
-                <span>PAUSED</span>
-                <div className={styles.pausedHint}>Press P to continue</div>
-              </div>
+      <div className={`${styles.gameContainer} ${styles.multiplayer}`}>
+        {/* Left Sidebar - Player Stats */}
+        <div className={styles.sidebar}>
+          <div className={styles.sectionHeader}>
+            <div className={styles.gameControls}>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(roomId);
+                  setCopySuccess(true);
+                  setTimeout(() => setCopySuccess(false), 2000);
+                }}
+                className={styles.headerButton}
+                title="Copy Room ID"
+              >
+                {copySuccess ? '✓ Copied!' : '📋 Room ID'}: {roomId}
+              </button>
             </div>
-          )}
+          </div>
+          
+          <div className={styles.playerStatsHeader}>
+            {Object.entries(playerStatsByUser)
+              .sort(([aId], [bId]) => {
+                if (aId === myId) return -1;
+                if (bId === myId) return 1;
+                return aId.localeCompare(bId);
+              })
+              .map(([userId, users]) => {
+                const isYou = userId === myId;
+                const user = users[userId];
+                if (!user) return null;
+
+                return (
+                  <div key={userId} className={`${styles.playerStatCard} ${isYou ? styles.yourCard : styles.opponentCard} ${user.isGameOver ? styles.gameOver : ''} ${user.isPaused ? styles.paused : ''}`}>
+                    <div className={`${styles.playerNameTag} ${isYou ? styles.yourNameTag : ''}`}>
+                      {isYou ? `${user.name} (YOU)` : user.name}
+                      {user.isGameOver && <span className={styles.statusBadge}>GAME OVER</span>}
+                      {user.isPaused && !user.isGameOver && <span className={styles.statusBadge}>PAUSED</span>}
+                    </div>
+                    <MultiplayerGameInfo
+                      score={user.score}
+                      level={user.level}
+                      lines={user.lines}
+                      scoreFlash={isYou && score > prevScore}
+                      compact={true}
+                      timeLeft={
+                        <GameTimer 
+                          gameDuration={gameDuration}
+                          gameStarted={gameStarted}
+                          isGameOver={isGameOver}
+                          isPaused={isPaused}
+                          togglePause={togglePause}
+                          onTimeUp={handleTimeUp}
+                        />
+                      }
+                    />
+                  </div>
+                );
+              })}
+          </div>
         </div>
 
-        <div className={styles.gameSidebar}>
+        {/* Main Game Area */}
+        <div className={styles.mainContent}>
+          <div className={styles.gameContent}>
+            <div className={`${styles.gameBoard} ${isGameOver ? styles.gameOverActive : ''}`}>
+              <Board
+                board={renderBoard}
+                clearedLines={clearedLines}
+              />
+              {isGameOver && (
+                <GameOver 
+                  score={score}
+                  level={level}
+                  lines={gameState.lines}
+                  isMultiplayer={true}
+                />
+              )}
+              {allPlayersGameOver && (
+                <MultiplayerGameOver
+                  playerResults={Object.entries(playerStatsByUser).map(([id, users]) => ({
+                    id,
+                    name: users[id]?.name || 'Unknown',
+                    score: users[id]?.score || 0,
+                    isYou: id === myId,
+                  }))}
+                  onBackToLobby={onLeave}
+                />
+              )}
+              {gameState.isPaused && (
+                <div className={styles.pausedOverlay}>
+                  <div className={styles.pausedText}>
+                    <span>PAUSED</span>
+                    <div className={styles.pausedHint}>Press P to continue</div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Right Sidebar - Controls */}
+        <div className={styles.controlsSidebar}>
           <NextPiecePreview piece={gameState.nextPiece} />
           <Controls
             onPause={togglePause}
@@ -348,7 +351,7 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
           />
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

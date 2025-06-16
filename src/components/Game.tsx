@@ -210,7 +210,7 @@ const Game: React.FC<GameProps> = ({ onGoHome }) => {
           <ConfirmationDialog
             isOpen={showConfirmDialog}
             title="Leave Game"
-            message={<span>Return to home? <br/>Current progress will be lost.</span>}
+            message={<span>Return to home? <br />Current progress will be lost.</span>}
             confirmText="Leave"
             cancelText="Cancel"
             onConfirm={handleConfirmGoHome}
@@ -246,7 +246,7 @@ const Game: React.FC<GameProps> = ({ onGoHome }) => {
                 clearedLines={clearedLines}
               />
               {isGameOver && (
-                <GameOver score={score} onNewGame={handleNewGameClick} />
+                <GameOver score={score} level={level} lines={gameState.lines} onNewGame={handleNewGameClick} />
               )}
               {gameState.isPaused && (
                 <div className={styles.pausedOverlay}>

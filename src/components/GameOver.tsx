@@ -23,9 +23,9 @@ const GameOver: React.FC<GameOverProps> = ({
       <div className={styles.gameOverContent}>
         <h2>Game Over</h2>
         <div className={styles.stats}>
-          <p>Score: {score}</p>
-          <p>Level: {level}</p>
-          <p>Lines: {lines}</p>
+          <p data-label="Score">{typeof score === 'number' ? score.toLocaleString() : '0'}</p>
+          <p data-label="Level">{level}</p>
+          <p data-label="Lines">{lines}</p>
         </div>
         <div className={styles.buttonGroup}>
           {!isMultiplayer && showNewGame && (

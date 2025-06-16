@@ -33,7 +33,7 @@
 
 .gameOverContent {
   background: #1a1a2e;
-  padding: 2rem 3rem;
+  padding: 2.5rem 3rem;
   border-radius: 12px;
   text-align: center;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
@@ -41,28 +41,55 @@
   width: 400px;
   transform: translateY(0);
   transition: transform 0.3s ease, opacity 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .gameOver h2 {
   color: #ff4d4d;
-  margin: 0 0 1.5rem 0;
-  font-size: 2.5rem;
+  margin: 0 0 2rem 0;
+  font-size: 1.8rem;
+  font-weight: 700;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  letter-spacing: 1px;
+  text-transform: uppercase;
 }
 
 .stats {
-  margin-bottom: 2rem;
+  margin: 0 auto 2.5rem;
   background: rgba(255, 255, 255, 0.05);
-  padding: 1.5rem;
-  border-radius: 8px;
-  margin: 0 -0.5rem 2rem -0.5rem;
+  padding: 1.5rem 2rem;
+  border-radius: 10px;
+  width: 100%;
+  max-width: 280px;
+  box-sizing: border-box;
 }
 
 .stats p {
-  color: #e0e0e0;
-  font-size: 1.3rem;
-  margin: 0.8rem 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #f0f0f0;
+  font-size: 1.4rem;
+  margin: 1.2rem 0;
   font-weight: 500;
+  letter-spacing: 0.5px;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.stats p:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.stats p::before {
+  content: attr(data-label);
+  color: #a78bfa;
+  font-size: 1.1rem;
+  margin-right: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .buttonGroup {

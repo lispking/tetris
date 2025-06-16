@@ -3,7 +3,7 @@ import { useTetris } from '../hooks/useTetris';
 import { useAnalytics } from '../contexts/AnalyticsContext';
 import { useMyId, useStateTogetherWithPerUserValues } from 'react-together';
 import Board from './Board';
-import GameInfo from './GameInfo';
+import MultiplayerGameInfo from './MultiplayerGameInfo';
 import GameOver from './GameOver';
 import NextPiecePreview from './NextPiecePreview';
 import Controls from './Controls';
@@ -260,7 +260,7 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
                     {user.isGameOver && <span className={styles.statusBadge}>GAME OVER</span>}
                     {user.isPaused && !user.isGameOver && <span className={styles.statusBadge}>PAUSED</span>}
                   </div>
-                  <GameInfo
+                  <MultiplayerGameInfo
                     score={user.score}
                     level={user.level}
                     lines={user.lines}

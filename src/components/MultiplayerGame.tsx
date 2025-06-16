@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTetris } from '../hooks/useTetris';
 import { useAnalytics } from '../contexts/AnalyticsContext';
 import { useMyId, useStateTogetherWithPerUserValues } from 'react-together';
@@ -44,6 +45,13 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
   const [prevScore, setPrevScore] = useState(0);
   const [showCountdown, setShowCountdown] = useState(true);
   const [allPlayersGameOver, setAllPlayersGameOver] = useState(false);
+
+  const navigate = useNavigate();
+  
+  const handleLeaveRoom = useCallback(() => {
+    onLeave();
+    navigate('/singleplayer');
+  }, [navigate, onLeave]);
 
   const handleTimeUp = useCallback(() => {
     setGameOver(true);
@@ -270,13 +278,17 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
               )}
               {allPlayersGameOver && (
                 <MultiplayerGameOver
-                  playerResults={Object.entries(playerStatsByUser).map(([id, users]) => ({
-                    id,
-                    name: users[id]?.name || 'Unknown',
-                    score: users[id]?.score || 0,
-                    isYou: id === myId,
-                  }))}
-                  onBackToLobby={onLeave}
+                  playerResults={Object.entries(playerStatsByUser).map(([id, userData]) => {
+                    // Handle both possible data structures from react-together
+                    const stats = userData[id] || userData;
+                    return {
+                      id,
+                      name: stats?.name || 'Unknown',
+                      score: stats?.score || 0,
+                      isYou: id === myId,
+                    };
+                  })}
+                  onBackToLobby={handleLeaveRoom}
                 />
               )}
               {gameState.isPaused && (

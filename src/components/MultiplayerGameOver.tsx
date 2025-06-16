@@ -17,10 +17,28 @@ const MultiplayerGameOver: React.FC<MultiplayerGameOverProps> = ({
   playerResults,
   onBackToLobby,
 }) => {
+  // Ensure we have player results
+  if (!playerResults || playerResults.length === 0) {
+    return (
+      <div className={styles.overlay}>
+        <div className={styles.gameOverContainer}>
+          <h2 className={styles.title}>Game Over</h2>
+          <p>No game results available</p>
+          <button 
+            onClick={onBackToLobby}
+            className={`${styles.button} ${styles.secondaryButton}`}
+          >
+            Back to Lobby
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   // Sort players by score in descending order
-  const sortedPlayers = [...playerResults].sort((a, b) => b.score - a.score);
-  const winner = sortedPlayers[0];
-  const isTie = sortedPlayers.length > 1 && sortedPlayers[0].score === sortedPlayers[1].score;
+  const sortedPlayers = [...playerResults].sort((a, b) => (b?.score || 0) - (a?.score || 0));
+  const winner = sortedPlayers[0] || { isYou: false, name: 'No winner', score: 0 };
+  const isTie = sortedPlayers.length > 1 && sortedPlayers[0]?.score === sortedPlayers[1]?.score;
 
   return (
     <div className={styles.overlay}>

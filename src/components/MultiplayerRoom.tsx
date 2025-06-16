@@ -205,9 +205,6 @@ const MultiplayerRoom: React.FC<MultiplayerRoomProps> = ({
     }, [players, playerName, setGameStatus]);
 
     const handleLeaveRoom = useCallback(() => {
-        // First update local state to prevent UI flicker
-        setError('');
-
         // Then clean up the session
         leaveSession();
 

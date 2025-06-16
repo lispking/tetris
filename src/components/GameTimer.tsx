@@ -18,69 +18,81 @@ const GameTimer: React.FC<GameTimerProps> = ({
   togglePause,
   onTimeUp,
 }) => {
-  const [timeLeft, setTimeLeft] = useState(gameDuration);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const [displayTime, setDisplayTime] = useState(gameDuration);
+  const animationRef = useRef<number | null>(null);
+  const startTimeRef = useRef<number>(0);
+  const timeLeftRef = useRef(gameDuration);
+  const prevGameStartedRef = useRef(false);
 
-  // Initialize timer when gameDuration changes
+  // Update time left ref when gameDuration changes
   useEffect(() => {
-    setTimeLeft(gameDuration);
+    timeLeftRef.current = gameDuration;
+    setDisplayTime(gameDuration);
   }, [gameDuration]);
 
-  // Handle countdown timer
+  // Handle countdown timer and game state
   useEffect(() => {
-    console.log('Timer effect - gameStarted:', gameStarted, 'isGameOver:', isGameOver, 'timeLeft:', timeLeft);
-    
-    if (gameStarted && !isGameOver && timeLeft > 0) {
-      console.log('Starting countdown timer with timeLeft:', timeLeft);
+    if (!gameStarted || isGameOver) {
+      if (animationRef.current !== null) {
+        cancelAnimationFrame(animationRef.current);
+        animationRef.current = null;
+      }
+      return;
+    }
+
+    // If game just started or was paused
+    if (gameStarted && !prevGameStartedRef.current) {
+      startTimeRef.current = Date.now();
+    }
+    prevGameStartedRef.current = gameStarted;
+
+    const updateTimer = () => {
+      if (!gameStarted || isGameOver) return;
+
+      const now = Date.now();
+      const elapsed = Math.floor((now - (startTimeRef.current || now)) / 1000);
+      const newTimeLeft = Math.max(0, gameDuration - elapsed);
       
-      // Clear any existing interval
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
+      if (newTimeLeft !== timeLeftRef.current) {
+        timeLeftRef.current = newTimeLeft;
+        setDisplayTime(newTimeLeft);
+
+        if (newTimeLeft <= 0) {
+          console.log('Time is up!');
+          onTimeUp();
+          if (!isPaused) {
+            togglePause();
+          }
+          return;
+        }
       }
       
-      // Start new interval
-      timerRef.current = setInterval(() => {
-        setTimeLeft(prev => {
-          if (prev <= 1) {
-            console.log('Time is up!');
-            clearInterval(timerRef.current as NodeJS.Timeout);
-            onTimeUp();
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    }
+      animationRef.current = requestAnimationFrame(updateTimer);
+    };
+
+    animationRef.current = requestAnimationFrame(updateTimer);
 
     return () => {
-      console.log('Cleaning up timer');
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
       }
     };
-  }, [gameStarted, isGameOver, timeLeft, onTimeUp]);
-
-  // Handle game over when time is up
-  useEffect(() => {
-    if (timeLeft === 0 && !isGameOver && !isPaused) {
-      togglePause();
-    }
-  }, [timeLeft, isGameOver, isPaused, togglePause]);
+  }, [gameStarted, isGameOver, gameDuration, isPaused, onTimeUp, togglePause]);
 
   // Format time as MM:SS
   const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
+    const secs = Math.floor(seconds % 60);
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
   // Add warning class when time is 30 seconds or less
-  const isTimeRunningLow = timeLeft <= 30 && timeLeft > 0;
+  const isTimeRunningLow = displayTime <= 30 && displayTime > 0;
 
   return (
     <div className={styles.gameTimer}>
       <div className={`${styles.timeDisplay} ${isTimeRunningLow ? styles.timeWarning : ''}`}>
-        {formatTime(timeLeft)}
+        {formatTime(displayTime)}
       </div>
     </div>
   );

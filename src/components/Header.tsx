@@ -4,7 +4,6 @@ import styles from './Header.module.css';
 
 const Header = () => {
   const location = useLocation();
-  const isActive = (path: string) => location.pathname === path;
   const isPlayActive = ['/singleplayer', '/multiplayer'].includes(location.pathname);
 
   return (

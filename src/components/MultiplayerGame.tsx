@@ -236,9 +236,65 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
       </div>
 
       <div className={`${styles.gameContainer} ${styles.multiplayer}`}>
-        {/* Left Sidebar - Player Stats */}
+        {/* Left Sidebar - Controls */}
+        <div className={styles.controlsSidebar}>
+          <NextPiecePreview piece={gameState.nextPiece} />
+          <Controls
+            onPause={togglePause}
+            onNewGame={handleNewGame}
+            isPaused={gameState.isPaused}
+            onMoveLeft={() => move('left')}
+            onMoveRight={() => move('right')}
+            onRotate={rotate}
+            onHardDrop={() => move('drop')}
+            onSoftDrop={() => move('down')}
+            showNewGame={false}
+          />
+        </div>
+
+        {/* Main Game Area */}
+        <div className={styles.mainContent}>
+          <div className={styles.gameContent}>
+            <div className={`${styles.gameBoard} ${isGameOver ? styles.gameOverActive : ''}`}>
+              <Board
+                board={renderBoard}
+                clearedLines={clearedLines}
+              />
+              {isGameOver && (
+                <GameOver 
+                  score={score}
+                  level={level}
+                  lines={gameState.lines}
+                  isMultiplayer={true}
+                />
+              )}
+              {allPlayersGameOver && (
+                <MultiplayerGameOver
+                  playerResults={Object.entries(playerStatsByUser).map(([id, users]) => ({
+                    id,
+                    name: users[id]?.name || 'Unknown',
+                    score: users[id]?.score || 0,
+                    isYou: id === myId,
+                  }))}
+                  onBackToLobby={onLeave}
+                />
+              )}
+              {gameState.isPaused && (
+                <div className={styles.pausedOverlay}>
+                  <div className={styles.pausedText}>
+                    <span>PAUSED</span>
+                    <div className={styles.pausedHint}>Press P to continue</div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Right Sidebar - Player Stats */}
         <div className={styles.sidebar}>
           <div className={styles.sectionHeader}>
+            <h2 className={styles.sectionTitle}>PLAYERS</h2>
             <div className={styles.gameControls}>
               <button
                 onClick={() => {
@@ -249,7 +305,7 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
                 className={styles.headerButton}
                 title="Copy Room ID"
               >
-                {copySuccess ? '✓ Copied!' : '📋 Room ID'}: {roomId}
+                {copySuccess ? '✓ Copied!' : '📋 Room ID'}
               </button>
             </div>
           </div>
@@ -294,61 +350,6 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
                 );
               })}
           </div>
-        </div>
-
-        {/* Main Game Area */}
-        <div className={styles.mainContent}>
-          <div className={styles.gameContent}>
-            <div className={`${styles.gameBoard} ${isGameOver ? styles.gameOverActive : ''}`}>
-              <Board
-                board={renderBoard}
-                clearedLines={clearedLines}
-              />
-              {isGameOver && (
-                <GameOver 
-                  score={score}
-                  level={level}
-                  lines={gameState.lines}
-                  isMultiplayer={true}
-                />
-              )}
-              {allPlayersGameOver && (
-                <MultiplayerGameOver
-                  playerResults={Object.entries(playerStatsByUser).map(([id, users]) => ({
-                    id,
-                    name: users[id]?.name || 'Unknown',
-                    score: users[id]?.score || 0,
-                    isYou: id === myId,
-                  }))}
-                  onBackToLobby={onLeave}
-                />
-              )}
-              {gameState.isPaused && (
-                <div className={styles.pausedOverlay}>
-                  <div className={styles.pausedText}>
-                    <span>PAUSED</span>
-                    <div className={styles.pausedHint}>Press P to continue</div>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Right Sidebar - Controls */}
-        <div className={styles.controlsSidebar}>
-          <NextPiecePreview piece={gameState.nextPiece} />
-          <Controls
-            onPause={togglePause}
-            onNewGame={handleNewGame}
-            isPaused={gameState.isPaused}
-            onMoveLeft={() => move('left')}
-            onMoveRight={() => move('right')}
-            onRotate={rotate}
-            onHardDrop={() => move('drop')}
-            onSoftDrop={() => move('down')}
-            showNewGame={false}
-          />
         </div>
       </div>
     </>

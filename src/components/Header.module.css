@@ -72,8 +72,25 @@
   transition: width 0.3s ease;
 }
 
-.navLink:hover::after {
+.navLink:hover::after,
+.navLink.active::after {
   width: calc(100% - 2rem);
+}
+
+.navLink.active {
+  color: white;
+  font-weight: 600;
+}
+
+.navLink.active .dropdownIcon {
+  transform: rotate(180deg);
+}
+
+.dropdownLink.activeDropdownLink {
+  background: rgba(74, 222, 128, 0.1);
+  color: #4ade80;
+  padding-left: 1.25rem;
+  border-left: 3px solid #4ade80;
 }
 
 .dropdown {

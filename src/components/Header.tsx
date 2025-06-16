@@ -1,35 +1,62 @@
 import { ConnectButton } from '@rainbow-me/rainbowkit';
-import { Link } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import styles from './Header.module.css';
 
 const Header = () => {
+  const location = useLocation();
+  const isActive = (path: string) => location.pathname === path;
+  const isPlayActive = ['/singleplayer', '/multiplayer'].includes(location.pathname);
+
   return (
     <header className={styles.header}>
       <div className={`${styles.logoContainer} ${styles.titleGlow}`}>
-        <Link to="/" className={`${styles.logo} ${styles.titleGlow}`}>
+        <NavLink to="/" className={`${styles.logo} ${styles.titleGlow}`}>
           Tetris PvP
-        </Link>
+        </NavLink>
       </div>
       <nav className={styles.nav}>
-        <Link to="/" className={styles.navLink}>
+        <NavLink 
+          to="/" 
+          className={({ isActive }) => 
+            isActive ? `${styles.navLink} ${styles.active}` : styles.navLink
+          }
+        >
           Home
-        </Link>
+        </NavLink>
         <div className={styles.dropdown}>
-          <button className={styles.navLink}>
+          <button 
+            className={`${styles.navLink} ${isPlayActive ? styles.active : ''}`}
+            onClick={(e) => e.preventDefault()}
+          >
             Play <span className={styles.dropdownIcon}>▼</span>
           </button>
           <div className={styles.dropdownContent}>
-            <Link to="/singleplayer" className={styles.dropdownLink}>
+            <NavLink 
+              to="/singleplayer" 
+              className={({ isActive }) => 
+                isActive ? `${styles.dropdownLink} ${styles.activeDropdownLink}` : styles.dropdownLink
+              }
+            >
               Single Player
-            </Link>
-            <Link to="/multiplayer" className={styles.dropdownLink}>
+            </NavLink>
+            <NavLink 
+              to="/multiplayer" 
+              className={({ isActive }) => 
+                isActive ? `${styles.dropdownLink} ${styles.activeDropdownLink}` : styles.dropdownLink
+              }
+            >
               Multiplayer
-            </Link>
+            </NavLink>
           </div>
         </div>
-        <Link to="/nfts" className={styles.navLink}>
+        <NavLink 
+          to="/nfts" 
+          className={({ isActive }) => 
+            isActive ? `${styles.navLink} ${styles.active}` : styles.navLink
+          }
+        >
           My NFTs
-        </Link>
+        </NavLink>
       </nav>
       <div className={styles.walletButton}>
         <ConnectButton

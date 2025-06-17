@@ -9,7 +9,9 @@
     "preview": "vite preview",
     "compile": "npx hardhat compile",
     "deploy:monadTestnet": "npx hardhat deploy --network monadTestnet",
-    "upgrade:monadTestnet": "npx hardhat upgrade --network monadTestnet"
+    "upgrade:monadTestnet": "npx hardhat upgrade --network monadTestnet",
+    "setBaseURI:monadTestnet": "npx hardhat setBaseURI --network monadTestnet",
+    "checkBaseURI:monadTestnet": "npx hardhat checkBaseURI --network monadTestnet"
   },
   "dependencies": {
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",

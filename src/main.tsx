@@ -11,7 +11,7 @@ const AnalyticsWrapper = () => {
     initGA()
     logPageView(window.location.pathname, document.title)
   }, [])
-  
+
   return (
     <AnalyticsProvider>
       <App />
@@ -22,5 +22,5 @@ const AnalyticsWrapper = () => {
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <AnalyticsWrapper />
-  </StrictMode>,
+  </StrictMode>
 )

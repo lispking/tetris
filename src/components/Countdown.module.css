@@ -1,0 +1,76 @@
+.countdownOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.countdownNumber {
+  font-size: 20rem;
+  font-weight: bold;
+  color: #fff;
+  text-shadow: 0 0 30px rgba(255, 255, 255, 0.8);
+  opacity: 0.9;
+  animation: pulse 1s ease-in-out infinite;
+  line-height: 1;
+  font-family: 'Arial Black', Arial, sans-serif;
+  text-align: center;
+  user-select: none;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.8);
+    opacity: 0.7;
+  }
+}
+
+.goText {
+  color: #4caf50;
+  text-shadow: 0 0 40px rgba(76, 175, 80, 0.8);
+  animation: goPulse 0.5s ease-out forwards;
+}
+
+@keyframes goPulse {
+  0% {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.3);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+
+.goAnimation {
+  background-color: rgba(0, 0, 0, 0.5);
+  animation: flashBackground 0.5s ease-out;
+}
+
+@keyframes flashBackground {
+  0% {
+    background-color: rgba(76, 175, 80, 0.3);
+  }
+  100% {
+    background-color: rgba(0, 0, 0, 0.7);
+  }
+}

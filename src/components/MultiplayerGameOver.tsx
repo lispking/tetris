@@ -9,6 +9,7 @@ interface PlayerResult {
   score: number;
   level: number;
   lines: number;
+  gameDuration: number;
   isYou: boolean;
 }
 
@@ -45,6 +46,7 @@ const MultiplayerGameOver: React.FC<MultiplayerGameOverProps> = ({
             score: p.score,
             level: p.level,
             lines: p.lines,
+            gameDuration: p.gameDuration || 0,
             isYou: p.isYou || false
           })),
           roomId

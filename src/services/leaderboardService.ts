@@ -66,6 +66,7 @@ export interface PlayerResult {
   score: number;
   level: number;
   lines: number;
+  gameDuration: number; // in seconds
   isYou: boolean;
 }
 
@@ -91,6 +92,7 @@ export const saveMultiplayerResults = async (
         score: player.score,
         level: player.level,
         lines: player.lines,
+        game_duration: player.gameDuration,
         room_id: roomId
       })
     )

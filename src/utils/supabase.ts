@@ -13,6 +13,7 @@ export interface LeaderboardEntry {
   score: number;
   level: number;
   lines: number;
+  game_duration: number; // in seconds
   room_id: string;
   created_at?: string;
 }

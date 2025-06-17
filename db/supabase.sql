@@ -1,6 +1,3 @@
--- Drop existing table if it exists
-DROP TABLE IF EXISTS public.leaderboard;
-
 -- Create the leaderboard table with composite primary key
 CREATE TABLE public.leaderboard (
   player_id TEXT NOT NULL,
@@ -9,6 +6,7 @@ CREATE TABLE public.leaderboard (
   score INTEGER NOT NULL,
   level INTEGER NOT NULL,
   lines INTEGER NOT NULL,
+  game_duration INTEGER NOT NULL,
   room_id TEXT NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,

@@ -4,8 +4,35 @@ import { getLeaderboard } from '../services/leaderboardService';
 import { useAccount } from 'wagmi';
 import styles from './LeaderboardPage.module.css';
 
+interface LeaderboardEntry {
+  id: string;
+  wallet_address: string;
+  player_name: string;
+  room_id: string;
+  score: number;
+  level: number;
+  lines: number;
+  game_duration: number;
+  created_at: string;
+}
+
+const formatDuration = (seconds: number): string => {
+  if (seconds === undefined || seconds === null) return 'N/A';
+  if (seconds === 0) return '0';
+  
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+  
+  if (minutes > 0) {
+    return remainingSeconds > 0 
+      ? `${minutes}m ${remainingSeconds}s`
+      : `${minutes}m`;
+  }
+  return `${remainingSeconds}s`;
+};
+
 const LeaderboardPage: React.FC = () => {
-  const [scores, setScores] = useState<any[]>([]);
+  const [scores, setScores] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { address: currentUserAddress } = useAccount();
@@ -35,19 +62,20 @@ const LeaderboardPage: React.FC = () => {
 
   return (
     <div className={styles.container}>
-      <div className={styles.header}>
-        <h1>🏆 Leaderboard</h1>
+      <header className={styles.header}>
+        <h1>🏆 PVP Leaderboard</h1>
         <button 
           onClick={() => navigate('/')} 
           className={styles.backButton}
+          aria-label="Back to home"
         >
           ← Back to Home
         </button>
-      </div>
+      </header>
       
       {loading ? (
         <div className={styles.loading}>
-          <div className={styles.spinner}></div>
+          <div className={styles.spinner} aria-hidden="true"></div>
           <p>Loading leaderboard...</p>
         </div>
       ) : error ? (
@@ -62,59 +90,85 @@ const LeaderboardPage: React.FC = () => {
         </div>
       ) : (
         <div className={styles.leaderboard}>
-          <div className={styles.tableHeader}>
-            <div className={styles.rankHeader}>Rank</div>
-            <div className={styles.playerHeader}>Player</div>
-            <div className={styles.walletHeader}>Wallet</div>
-            <div className={styles.roomHeader}>Room ID</div>
-            <div className={styles.scoreHeader}>Score</div>
-            <div className={styles.levelHeader}>Level</div>
-            <div className={styles.linesHeader}>Lines</div>
-            <div className={styles.dateHeader}>Date</div>
+          <div className={styles.tableHeader} role="row">
+            <div className={`${styles.cell} ${styles.rankCell}`}>Rank</div>
+            <div className={`${styles.cell} ${styles.playerCell}`}>Player</div>
+            <div className={`${styles.cell} ${styles.walletCell}`}>Wallet</div>
+            <div className={`${styles.cell} ${styles.roomCell}`}>Room ID</div>
+            <div className={`${styles.cell} ${styles.scoreCell}`}>Score</div>
+            <div className={`${styles.cell} ${styles.levelCell}`}>Level</div>
+            <div className={`${styles.cell} ${styles.linesCell}`}>Lines</div>
+            <div className={`${styles.cell} ${styles.durationCell}`}>Duration</div>
+            <div className={`${styles.cell} ${styles.dateCell}`}>Date</div>
           </div>
-          <div className={styles.leaderboardBody}>
-            {scores.map((entry, index) => (
-              <div 
-                key={entry.id} 
-                className={`${styles.entry} ${
-                  entry.wallet_address?.toLowerCase() === currentUserAddress?.toLowerCase() ? styles.currentUser : ''
-                }`}
-              >
-                <div className={styles.cell} data-label="Rank">
-                  <div className={styles.rank}>
-                    {index < 3 ? ['🥇', '🥈', '🥉'][index] : index + 1}
+          
+          <div className={styles.leaderboardBody} role="grid">
+            {scores.length > 0 ? (
+              scores.map((entry, index) => (
+                <div 
+                  key={entry.id}
+                  className={`${styles.entry} ${
+                    entry.wallet_address?.toLowerCase() === currentUserAddress?.toLowerCase() 
+                      ? styles.currentUser 
+                      : ''
+                  }`}
+                  role="row"
+                >
+                  <div className={`${styles.cell} ${styles.rankCell}`} data-label="Rank">
+                    <span className={styles.cellContent}>
+                      {index < 3 ? ['🥇', '🥈', '🥉'][index] : index + 1}
+                    </span>
+                  </div>
+                  <div className={`${styles.cell} ${styles.playerCell}`} data-label="Player">
+                    <span className={`${styles.cellContent} ${styles.playerName}`}>
+                      {entry.player_name || 'Anonymous'}
+                    </span>
+                  </div>
+                  <div className={`${styles.cell} ${styles.walletCell}`} data-label="Wallet">
+                    <span className={`${styles.cellContent} ${styles.walletAddress}`}>
+                      {formatWalletAddress(entry.wallet_address || '')}
+                      {entry.wallet_address?.toLowerCase() === currentUserAddress?.toLowerCase() && (
+                        <span className={styles.youBadge}>You</span>
+                      )}
+                    </span>
+                  </div>
+                  <div className={`${styles.cell} ${styles.roomCell}`} data-label="Room">
+                    <span className={styles.cellContent}>
+                      {entry.room_id}
+                    </span>
+                  </div>
+                  <div className={`${styles.cell} ${styles.scoreCell}`} data-label="Score">
+                    <span className={styles.cellContent}>
+                      {entry.score.toLocaleString()}
+                    </span>
+                  </div>
+                  <div className={`${styles.cell} ${styles.levelCell}`} data-label="Level">
+                    <span className={styles.cellContent}>
+                      {entry.level}
+                    </span>
+                  </div>
+                  <div className={`${styles.cell} ${styles.linesCell}`} data-label="Lines">
+                    <span className={styles.cellContent}>
+                      {entry.lines}
+                    </span>
+                  </div>
+                  <div className={`${styles.cell} ${styles.durationCell}`} data-label="Duration">
+                    <span className={styles.cellContent}>
+                      {formatDuration(entry.game_duration)}
+                    </span>
+                  </div>
+                  <div className={`${styles.cell} ${styles.dateCell}`} data-label="Date">
+                    <span className={styles.cellContent}>
+                      {new Date(entry.created_at).toLocaleDateString()}
+                    </span>
                   </div>
                 </div>
-                <div className={`${styles.cell} ${styles.playerCell}`} data-label="Player">
-                  <div className={styles.playerName}>
-                    {entry.player_name || 'Anonymous'}
-                  </div>
-                </div>
-                <div className={`${styles.cell} ${styles.walletCell}`} data-label="Wallet">
-                  <div className={styles.walletAddress}>
-                    {formatWalletAddress(entry.wallet_address || '')}
-                    {entry.wallet_address?.toLowerCase() === currentUserAddress?.toLowerCase() && (
-                      <span className={styles.youBadge}>You</span>
-                    )}
-                  </div>
-                </div>
-                <div className={`${styles.cell} ${styles.roomCell}`} data-label="Room">
-                  {entry.room_id}
-                </div>
-                <div className={`${styles.cell} ${styles.scoreCell}`} data-label="Score">
-                  {entry.score.toLocaleString()}
-                </div>
-                <div className={`${styles.cell} ${styles.levelCell}`} data-label="Level">
-                  {entry.level}
-                </div>
-                <div className={`${styles.cell} ${styles.linesCell}`} data-label="Lines">
-                  {entry.lines}
-                </div>
-                <div className={`${styles.cell} ${styles.dateCell}`} data-label="Date">
-                  {new Date(entry.created_at).toLocaleDateString()}
-                </div>
+              ))
+            ) : (
+              <div className={styles.noResults}>
+                <p>No leaderboard entries found</p>
               </div>
-            ))}
+            )}
           </div>
         </div>
       )}

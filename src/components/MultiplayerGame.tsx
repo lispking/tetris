@@ -178,6 +178,7 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
           score: user.score || 0,
           level: user.level || 1,
           lines: user.lines || 0,
+          gameDuration: gameDuration,
           isYou: userId === myId
         });
       });
@@ -363,6 +364,7 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
                       score: user.score || 0,
                       level: user.level || 1,
                       lines: user.lines || 0,
+                      gameDuration: gameDuration,
                       isYou: userId === myId
                     };
                   }).filter(Boolean) as PlayerResult[]}

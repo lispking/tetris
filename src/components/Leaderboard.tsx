@@ -10,6 +10,7 @@ export interface LeaderboardEntry {
   score: number;
   level: number;
   lines: number;
+  game_duration: number; // in seconds
   room_id: string;
   created_at?: string;  // Make optional to match Supabase types
 }
@@ -107,6 +108,7 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ roomId, currentPlayerId, onCl
             <div className={styles.tableHeaderCell}>Score</div>
             <div className={styles.tableHeaderCell}>Level</div>
             <div className={styles.tableHeaderCell}>Lines</div>
+            <div className={styles.tableHeaderCell}>Duration</div>
             <div className={styles.tableHeaderCell}>Date</div>
           </div>
           <div className={styles.tableBody}>
@@ -137,6 +139,9 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ roomId, currentPlayerId, onCl
                 </div>
                 <div className={styles.tableCell} data-label="Lines">
                   {entry.lines}
+                </div>
+                <div className={styles.tableCell} data-label="Duration">
+                  {entry.game_duration ? `${entry.game_duration}s` : 'N/A'}
                 </div>
                 <div className={styles.tableCell} data-label="Date">
                   {formatDate(entry.created_at)}

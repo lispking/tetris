@@ -5,6 +5,7 @@ import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721URISto
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 
 struct NftInfo {
     uint256 tokenId;
@@ -17,12 +18,14 @@ contract TetrisNFT is
     OwnableUpgradeable,
     UUPSUpgradeable 
 {
+    using Strings for uint256;
     error AlreadyMinted();
     error NonexistentToken();
     error ResourceIdOutOfRange(uint256 resourceId);
 
     uint256 private _tokenIdCounter;
     string public baseURI;
+    mapping(uint256 => uint256) public tokenId2ResourceId;
     mapping(address => NftInfo) public hasMinted;
 
     /// @custom:oz-upgrades-unsafe-allow constructor
@@ -50,6 +53,7 @@ contract TetrisNFT is
         uint256 tokenId = _tokenIdCounter;
         _setTokenURI(tokenId, string(abi.encodePacked(baseURI, resourceId)));
         
+        tokenId2ResourceId[tokenId] = resourceId;
         hasMinted[msg.sender] = NftInfo(tokenId, resourceId);
         _safeMint(msg.sender, tokenId);
     }
@@ -64,4 +68,9 @@ contract TetrisNFT is
 
     // Required by the UUPS proxy
     function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
+
+    function tokenURI(uint256 tokenId) public view override returns (string memory) {
+        uint256 resourceId = tokenId2ResourceId[tokenId];
+        return string.concat(baseURI, resourceId.toString());
+    }
 }

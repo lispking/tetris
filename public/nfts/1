@@ -1,7 +1,7 @@
 {
   "name": "Holographic Kitsune",
   "description": "The Holographic Kitsune is a rare and mystical fox spirit that brings good fortune to its owner. With its nine shimmering tails, it possesses the power to manipulate illusions and bring dreams to life. In Tetris PvP, it grants the ability to see one move ahead.",
-  "image": "https://multi-tetris.vercel.app/nfts/1.png",
+  "image": "https://tetris-battle.netlify.app/nfts/1.png",
   "attributes": [
     {
       "trait_type": "Rarity",

@@ -1,7 +1,7 @@
 {
   "name": "Neon Phoenix",
   "description": "Born from the heart of a dying star, the Neon Phoenix is a dazzling creature of pure energy. Its radiant feathers can blind opponents in Tetris PvP, giving its owner a distinct advantage. The Phoenix's special ability allows for instant line clears.",
-  "image": "https://multi-tetris.vercel.app/nfts/3.png",
+  "image": "https://tetris-battle.netlify.app/nfts/3.png",
   "attributes": [
     {
       "trait_type": "Rarity",

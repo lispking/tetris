@@ -34,7 +34,7 @@ contract TetrisNFT is
         __ERC721_init("Tetris PvP Access", "TETRIS");
         __Ownable_init(msg.sender);
         __UUPSUpgradeable_init();
-        baseURI = "https://multi-tetris.vercel.app/nfts/";
+        baseURI = "https://tetris-battle.netlify.app/nfts/";
     }
 
     function mint(uint256 resourceId) external payable {

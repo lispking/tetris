@@ -1,7 +1,7 @@
 {
   "name": "Quantum Cube Guardian",
   "description": "The Quantum Cube Guardian is a sentient being from the 4th dimension, composed of pure energy and ancient knowledge. It can manipulate the very fabric of space-time, making it a formidable opponent in Tetris PvP. Owners gain the ability to rotate pieces in both directions.",
-  "image": "https://multi-tetris.vercel.app/nfts/2.png",
+  "image": "https://tetris-battle.netlify.app/nfts/2.png",
   "attributes": [
     {
       "trait_type": "Rarity",

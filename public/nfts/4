@@ -1,7 +1,7 @@
 {
   "name": "Crystal Golem",
   "description": "Forged deep within the earth's core, the Crystal Golem is a massive, slow-moving but incredibly resilient being. Its crystalline structure can absorb and reflect attacks in Tetris PvP. Owners gain increased defense against line clears.",
-  "image": "https://multi-tetris.vercel.app/nfts/4.png",
+  "image": "https://tetris-battle.netlify.app/nfts/4.png",
   "attributes": [
     {
       "trait_type": "Rarity",

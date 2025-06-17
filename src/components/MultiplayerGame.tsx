@@ -363,7 +363,7 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
                       score: user.score || 0,
                       level: user.level || 1,
                       lines: user.lines || 0,
-                      isYou: walletAddress ? userId === walletAddress : false
+                      isYou: userId === myId
                     };
                   }).filter(Boolean) as PlayerResult[]}
                   roomId={roomId}
@@ -416,7 +416,7 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
               // Take only top 3 players
               .slice(0, 3)
               .map(([userId, users], index) => {
-                const isYou = walletAddress ? userId === walletAddress : false;
+                const isYou = userId === myId;
                 const user = users[userId];
                 if (!user) return null;
 

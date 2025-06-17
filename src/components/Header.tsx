@@ -49,6 +49,14 @@ const Header = () => {
           </div>
         </div>
         <NavLink 
+          to="/leaderboard" 
+          className={({ isActive }) => 
+            isActive ? `${styles.navLink} ${styles.active}` : styles.navLink
+          }
+        >
+          Leaderboard
+        </NavLink>
+        <NavLink 
           to="/nfts" 
           className={({ isActive }) => 
             isActive ? `${styles.navLink} ${styles.active}` : styles.navLink

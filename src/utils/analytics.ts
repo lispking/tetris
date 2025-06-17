@@ -73,6 +73,10 @@ export const Events = {
   NEW_GAME: 'new_game',
   GAME_STARTED: 'game_started',
   MULTIPLAYER_ROOM_CREATED: 'multiplayer_room_created',
-  MULTIPLAYER_ROOM_JOINED: 'multiplayer_room_joined',
+  MULTIPLAYER_ROOM_JOIN: 'multiplayer_room_join',
+  MULTIPLAYER_GAME_START: 'multiplayer_game_start',
   MULTIPLAYER_CONNECTION_ERROR: 'multiplayer_connection_error',
+  LEADERBOARD_UPDATE: 'leaderboard_update',
+  LEADERBOARD_SAVE_SUCCESS: 'leaderboard_save_success',
+  LEADERBOARD_SAVE_ERROR: 'leaderboard_save_error',
 };

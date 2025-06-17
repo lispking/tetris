@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTetris } from '../hooks/useTetris';
 import { useAnalytics } from '../contexts/AnalyticsContext';
 import { useMyId, useStateTogetherWithPerUserValues } from 'react-together';
+import { useAccount } from 'wagmi';
 import Board from './Board';
 import MultiplayerGameInfo from './MultiplayerGameInfo';
 import GameOver from './GameOver';
@@ -12,10 +13,12 @@ import Countdown from './Countdown';
 import GameTimer from './GameTimer';
 import MultiplayerGameOver from './MultiplayerGameOver';
 import { placePiece } from '../utils/gameUtils';
+import { saveMultiplayerResults, type PlayerResult } from '../services/leaderboardService';
 import styles from './MultiplayerGame.module.css';
 
 interface PlayerStats {
   id: string;
+  walletAddress: string;
   name: string;
   score: number;
   level: number;
@@ -45,6 +48,9 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
   const [prevScore, setPrevScore] = useState(0);
   const [showCountdown, setShowCountdown] = useState(true);
   const [allPlayersGameOver, setAllPlayersGameOver] = useState(false);
+  const [gameResultsSaved, setGameResultsSaved] = useState(false);
+  const [savingResults, setSavingResults] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const navigate = useNavigate();
   
@@ -57,9 +63,10 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
     setGameOver(true);
   }, []);
   const { trackEvent, events } = useAnalytics();
-  const myId = useMyId();
+  const { address: walletAddress } = useAccount();
   const gameStartedRef = useRef(false);
   const isPausedRef = useRef(true);
+  const myId = useMyId();
 
   // Get the tetris game state
   const {
@@ -86,13 +93,13 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
 
   // Update player stats with shared state
   useEffect(() => {
-    if (!gameStarted) return;
-    if (!myId) return;
+    if (!gameStarted || !myId || !walletAddress) return;
 
     setPlayerStats(prev => ({
       ...prev,
       [myId]: {
         id: myId,
+        walletAddress,
         name: playerName,
         score: score,
         level: level,
@@ -101,7 +108,7 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
         isPaused: isPausedRef.current || isPaused
       }
     }));
-  }, [playerName, score, level, gameState.lines, gameStarted, isGameOver, isPaused, setPlayerStats, myId]);
+  }, [myId, playerName, score, level, gameState.lines, gameStarted, isGameOver, isPaused, setPlayerStats, walletAddress]);
 
   // Track game start
   useEffect(() => {
@@ -109,13 +116,15 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
       trackEvent(events.GAME_START, {
         mode: 'multiplayer',
         roomId,
+        myId,
+        walletAddress,
         playerName,
         isHost,
         level: 1,
         duration: gameDuration
       });
     }
-  }, [gameStarted, roomId, playerName, isHost, trackEvent, events, gameDuration]);
+  }, [gameStarted, roomId, myId, walletAddress, playerName, isHost, trackEvent, events, gameDuration]);
 
   // Track game over and check if all players are done
   useEffect(() => {
@@ -125,26 +134,91 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
         level,
         lines_cleared: linesCleared,
         mode: 'multiplayer',
-        roomId
+        roomId,
+        myId,
+        walletAddress,
+        playerName,
+        isHost,
+        duration: gameDuration
       });
 
       // Check if all players are game over
-      const allOver = Object.values(playerStatsByUser).every(user => {
-        const stats = Object.values(user)[0];
-        return stats?.isGameOver;
+      const allOver = Object.values(playerStatsByUser).every(userData => {
+        // Get the first user in the userData object
+        const user = Object.values(userData)[0];
+        return user?.isGameOver;
       });
 
-      if (allOver) {
+      if (allOver && !allPlayersGameOver) {
         setAllPlayersGameOver(true);
+        saveGameResults();
       }
     }
-  }, [isGameOver, gameStarted, score, level, linesCleared, roomId, trackEvent, events, playerStatsByUser]);
+  }, [isGameOver, gameStarted, score, level, linesCleared, roomId, myId, walletAddress, playerName, isHost, trackEvent, events, playerStatsByUser, allPlayersGameOver]);
+  
+  // Save game results to the leaderboard
+  const saveGameResults = useCallback(async () => {
+    if (gameResultsSaved || savingResults || !allPlayersGameOver) return;
+    
+    try {
+      setSavingResults(true);
+      setSaveError(null);
+      
+      // Prepare player results with proper typing
+      const playerResults: PlayerResult[] = [];
+      
+      Object.entries(playerStatsByUser).forEach(([userId, users]) => {
+        const user = users[userId];
+        if (!user) return;
+        
+        playerResults.push({
+          id: userId,
+          name: user.name || 'Anonymous',
+          walletAddress: user.walletAddress,
+          score: user.score || 0,
+          level: user.level || 1,
+          lines: user.lines || 0,
+          isYou: userId === myId
+        });
+      });
+      
+      if (playerResults.length === 0) return;
+      
+      // Save to leaderboard
+      const result = await saveMultiplayerResults(playerResults, roomId);
+      
+      if (result.success) {
+        setGameResultsSaved(true);
+        trackEvent(events.LEADERBOARD_UPDATE, {
+          roomId,
+          playerCount: playerResults.length,
+          topScore: Math.max(...playerResults.map(p => p.score))
+        });
+      } else {
+        setSaveError('Failed to save game results to leaderboard');
+        trackEvent(events.LEADERBOARD_SAVE_ERROR, { roomId });
+      }
+    } catch (error) {
+      console.error('Error saving game results:', error);
+      setSaveError('An error occurred while saving results');
+      trackEvent(events.LEADERBOARD_SAVE_ERROR, { 
+        roomId,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    } finally {
+      setSavingResults(false);
+    }
+  }, [allPlayersGameOver, gameResultsSaved, savingResults, playerStatsByUser, walletAddress, roomId, myId, trackEvent, events]);
 
   // Track score changes
   useEffect(() => {
     if (gameStarted && score > prevScore) {
       const scoreIncrease = score - prevScore;
       trackEvent(events.SCORE_UPDATE, {
+        walletAddress,
+        myId,
+        roomId,
+        playerName,
         score,
         score_increase: scoreIncrease,
         level,
@@ -152,7 +226,7 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
       });
       setPrevScore(score);
     }
-  }, [score, prevScore, gameStarted, level, trackEvent, events]);
+  }, [score, prevScore, gameStarted, level, walletAddress, myId, roomId, playerName, trackEvent, events]);
 
   // Start the game when component mounts
   useEffect(() => {
@@ -278,17 +352,25 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
               )}
               {allPlayersGameOver && (
                 <MultiplayerGameOver
-                  playerResults={Object.entries(playerStatsByUser).map(([id, userData]) => {
-                    // Handle both possible data structures from react-together
-                    const stats = userData[id] || userData;
+                  playerResults={Object.entries(playerStatsByUser).map(([userId, users]) => {
+                    const user = users[userId];
+                    if (!user) return null;
+                    
                     return {
-                      id,
-                      name: stats?.name || 'Unknown',
-                      score: stats?.score || 0,
-                      isYou: id === myId,
+                      id: userId,
+                      name: user.name || 'Anonymous',
+                      walletAddress: user.walletAddress,
+                      score: user.score || 0,
+                      level: user.level || 1,
+                      lines: user.lines || 0,
+                      isYou: walletAddress ? userId === walletAddress : false
                     };
-                  })}
+                  }).filter(Boolean) as PlayerResult[]}
+                  roomId={roomId}
                   onBackToLobby={handleLeaveRoom}
+                  saveError={saveError}
+                  savingResults={savingResults}
+                  onRetrySave={saveGameResults}
                 />
               )}
               {gameState.isPaused && (
@@ -334,7 +416,7 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
               // Take only top 3 players
               .slice(0, 3)
               .map(([userId, users], index) => {
-                const isYou = userId === myId;
+                const isYou = walletAddress ? userId === walletAddress : false;
                 const user = users[userId];
                 if (!user) return null;
 

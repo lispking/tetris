@@ -6,6 +6,7 @@ import ProtectedRoute from '../components/ProtectedRoute';
 const Home = lazy(() => import('../pages/Home'));
 const SinglePlayerPage = lazy(() => import('../pages/game/SinglePlayerPage'));
 const MultiplayerPage = lazy(() => import('../pages/game/MultiplayerPage'));
+const LeaderboardPage = lazy(() => import('../pages/LeaderboardPage'));
 const NFTMinter = lazy(() => import('../components/NFTMinter'));
 
 const AppRouter = () => {
@@ -33,6 +34,12 @@ const AppRouter = () => {
             <ProtectedRoute>
               <NFTMinter />
             </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/leaderboard"
+          element={
+            <LeaderboardPage />
           }
         />
       </Routes>
